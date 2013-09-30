@@ -1,15 +1,15 @@
+/**
+ * Main file
+ * @author Benjamin François 
+ */
+var socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
 
 $(document).ready(function(){
     var view = new View(new Model(),'#000000', true);
-    new Controller(view, view.geModel());
+    new Controller(view, view.getModel());
+    socket.on("connect", onSocketConnected);
 });
 
-var socket = io.connect(window.location.hostname);
-
-socket.on('status', function (data) {
-    $('#status').html(data.status);
-});
-
-$('#reset').click(function() {
-    socket.emit('reset');
-});
+function onSocketConnected() {
+	console.log("Connected to socket server");
+};

@@ -1,0 +1,6 @@
+/**
+ * Local Player
+ */
+function Player(){
+	
+}

@@ -1,45 +1,93 @@
 /**
- * The server of the application
+ * The server of the game
+ * @author Benjamin François 
  */
 
-// Imports modules
-var express = require('express'),
-app = express(),
+/**
+ * Node.js Requirements
+ */
+var util = require("util"),
 http = require('http'),
-server = http.createServer(app),
-io = require('socket.io').listen(server);
+io = require('socket.io'),
+Player = require("./server-classes/player/Player").Player;
 
-// listen for new web clients:
-server.listen(8080);
+/**********************
+ ** Game event handlers
+ **********************/
+function setEventHandlers(){
+	server.sockets.on("connection", onSocketConnection);
+}
 
-var routes = require('./routes');
+function onSocketConnection(client){
+	util.log("New player has connected : " + client.id);
+	
+	// Listen for client disconnected
+	client.on("disconnect", onClientDisconnect);
+	
+	// Listen for move player message
+	client.on("move player", onMovePlayer);
+}
 
-// Configuration of the application
-app.configure(function() {
-	app.set('views', __dirname + '/views');
-	app.set('view engine', 'ejs');
-	app.use(express.bodyParser());
-	app.use(express.methodOverride());
-	app.use(app.router);
-	app.set('port', process.env.PORT || 5000);
-	app.use(express.static(__dirname + '/public'));
-});
+// Socket client has disconnected
+function onClientDisconnect(){
+	util.log("Player has disconnected : " + this.id);
+}
 
-// Routes
-app.get('/', routes.index);
-http.createServer(app).listen(app.get('port'), function() {
-	console.log('Express server listening on port ' + app.get('port'));
-});
+//Player has moved
+function onMovePlayer(data) {
+	// Find player in array
+	var movePlayer = playerById(this.id);
 
-// Development version : allow debug
-app.configure('development', function() {
-	app.use(express.errorHandler({
-		dumpExceptions : true,
-		showStack : true
-	}));
-});
+	// Player not found
+	if (!movePlayer) {
+		util.log("Player not found: "+ this.id);
+		return;
+	};
 
-// Production version
-app.configure('production', function() {
-	app.use(express.errorHandler());
-});
+	// Update player position
+	movePlayer.setX(data.x);
+	movePlayer.setY(data.y);
+
+	// Broadcast updated position to connected socket clients
+	this.broadcast.emit("move player", {id: movePlayer.id, x: movePlayer.getX(), y: movePlayer.getY()});
+};
+
+/******************
+ ** Game variables
+ *****************/
+var players = [];
+var server;
+
+/************************
+ ** Game helper functions
+ ************************/
+// Find player by ID
+function playerById(id) {
+	var i;
+	for (i = 0; i < players.length; i++) {
+		if (players[i].id == id)
+			return players[i];
+	};
+	
+	return false;
+};
+
+/**********************
+ ** Game initialization
+ **********************/
+function init(){
+	// listen for new web clients:
+	server = io.listen(8000);
+
+	// Configuration of the server
+	server.configure(function() {
+		server.set('port', process.env.PORT || 5000);
+		server.set("transports", ["websocket"]);
+		// Restrict log output
+		server.set("log level", 2);
+	});
+	
+	setEventHandlers();
+}
+
+init();
