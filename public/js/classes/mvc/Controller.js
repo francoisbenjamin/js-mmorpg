@@ -12,6 +12,7 @@ function Controller(view, model){
     
     document.body.appendChild(view.getRenderer().view);
     
+    _view.getModel().setPlayer(new Player());
     /**
      * Main loop
      */
