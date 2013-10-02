@@ -6,6 +6,7 @@
 function Model(){
 	this.remotePlayers = [];
 	this.player;
+	this.spawn = new PIXI.Point(0, 0);
 }
 
 // GETTERS
@@ -18,6 +19,23 @@ Model.prototype.getRemotePlayers = function(){
 	return this.remotePlayers;
 };
 
+/**
+ * Return the local player
+ * @returns {Player}
+ */
+Model.prototype.getLocalPlayer = function(){
+	return this.player;
+};
+
+
+/**
+ * Return the spawn coordinates of the player
+ * @returns {PIXI.Point}
+ */
+Model.prototype.getSpawn = function(){
+	return this.spawn;
+};
+
 // SETTERS
 
 /**
@@ -26,4 +44,20 @@ Model.prototype.getRemotePlayers = function(){
  */
 Model.prototype.setRemotePlayers = function(remotePlayers){
 	this.premotePlayers = remotePlayers;
+};
+
+/**
+ * Set the new local player
+ * @param player {Player}
+ */
+Model.prototype.setLocalPlayer = function(player){
+	this.player = player;
+};
+
+/**
+ * Set the new spawn coordinates
+ * @param spawn {PIXI.Point}
+ */
+Model.prototype.setSpawn = function(spawn){
+	this.spawn = spawn;
 };

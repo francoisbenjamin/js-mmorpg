@@ -7,6 +7,9 @@
 function Player(){
 	this.id;
 	this.level = 1;
+	this.name;
+	this.hpMax;
+	this.hp;
 	this.x;
 	this.y;
 }
@@ -44,6 +47,14 @@ Player.prototype.getY = function(){
 	return this.y;
 };
 
+/**
+ * Get the name of the player
+ * @returns {String}
+ */
+Player.prototype.getName = function(){
+	return this.name;
+};
+
 // SETTERS
 /**
  * Set the level of the player
@@ -51,6 +62,14 @@ Player.prototype.getY = function(){
  */
 Player.prototype.setLevel = function(level){
 	this.level = level;
+};
+
+/**
+ * Set the new player's name
+ * @param name {String}
+ */
+Player.prototype.setName = function(name){
+	this.name = name;
 };
 
 /**

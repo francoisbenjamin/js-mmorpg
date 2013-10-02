@@ -58,3 +58,11 @@
  View.prototype.setModel = function(model){
 	this.model = model; 
  };
+ 
+ /**
+  * Add an entity to the view
+  * @param entity
+  */
+ View.prototype.addEntity = function(entity){
+	 PIXI.Stage.prototype.addChild.call(this, entity); 
+ };
