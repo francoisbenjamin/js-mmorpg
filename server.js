@@ -45,7 +45,7 @@ function onClientDisconnect(){
 
 	// Player not found
 	if (!removePlayer) {
-		util.log("Player not found: "+this.id);
+		util.log("Player not found: "+ this.id);
 		return;
 	};
 
@@ -83,7 +83,7 @@ function onNewPlayer(data) {
 	newPlayer.id = this.id;
 
 	// Broadcast new player to connected socket clients
-	this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY()});
+	this.broadcast.emit("new player", {id: newPlayer.id, name : data.name, x: newPlayer.getX(), y: newPlayer.getY()});
 
 	// Send existing players to the new player
 	var i, existingPlayer;

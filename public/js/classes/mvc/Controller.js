@@ -20,8 +20,9 @@ function Controller(view, model){
     // Add the stage to the page
     document.body.appendChild(view.getRenderer().view);
     
+    
     // Set the spawn coordinates for the player
-    _view.getModel().setSpawn(new PIXI.Point(_view.getGameScreenWidth() / 2, _view.getGameScreenHeight() / 2));
+    _view.getModel().setSpawn(new PIXI.Point(Math.round(Math.random()*(_view.getGameScreenWidth() - 20)), Math.round(Math.random()*(_view.getGameScreenHeight() - 20))));
     
     /**********************
      ** Game event handlers
@@ -32,13 +33,60 @@ function Controller(view, model){
      */
     var onSocketConnected = function() {
     	// Send local player data to the game server
-    	_socket.emit("new player", {x: 45, y: 5, name: _view.getModel().getLocalPlayer().getName()});
+    	console.log(_view.getModel().getSpawn().x);
+    	_socket.emit("new player", {x: _view.getModel().getSpawn().x, y: _view.getModel().getSpawn().y, name: _view.getModel().getLocalPlayer().getName()});
     	console.log("Connected to socket server");
+    };
+    
+    /**
+     * New player
+     */ 
+   var onNewPlayer = function(data) {
+    	console.log("New player connected: "+ data.id);
+
+    	// Initialise the new player
+    	var newPlayer = new Player(new PIXI.Point(data.x, data.y), data.name, 60);
+    	newPlayer.id = data.id;
+    	_view.addEntity(newPlayer);
+    	// Add new player to the remote players array
+    	_view.getModel().getRemotePlayers().push(newPlayer);
+    };
+    
+    /**
+     * Remove player
+     */
+    function onRemovePlayer(data) {
+    	var removePlayer = playerById(data.id);
+
+    	// Player not found
+    	if (!removePlayer) {
+    		console.log("Player not found: " + data.id);
+    		return;
+    	};
+
+    	// Remove player from array
+    	_view.getModel().getRemotePlayers().splice(_view.getModel().getRemotePlayers().indexOf(removePlayer), 1);
+    };
+    
+    /**
+     * Socket disconnected
+     */
+    var onSocketDisconnect = function() {
+    	console.log("Disconnected from socket server");
     };
     
     var setEventHandlers = function(){
     	// Socket connection successful
     	_socket.on("connect", onSocketConnected);
+    	
+    	// New player message received
+    	_socket.on("new player", onNewPlayer);
+    	
+    	 // Socket disconnection
+    	_socket.on("disconnect", onSocketDisconnect);
+    	
+    	// Player removed message received
+    	_socket.on("remove player", onRemovePlayer);
     };
     
     /***********************
@@ -46,6 +94,7 @@ function Controller(view, model){
     ************************/
     // Find player by ID
     var playerById = function(id) {
+    	var remotePlayers = _view.getModel().getRemotePlayers();
     	var i;
     	for (i = 0; i < remotePlayers.length; i++) {
     		if (remotePlayers[i].id == id)

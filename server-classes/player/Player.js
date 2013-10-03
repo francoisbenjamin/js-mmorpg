@@ -4,14 +4,14 @@
  * @param texture {String}
  * @author Benjamin François 
  */
-function Player(){
+function Player(name, x, y){
 	this.id;
 	this.level = 1;
-	this.name;
+	this.name = name;
 	this.hpMax;
 	this.hp;
-	this.x;
-	this.y;
+	this.x = x;
+	this.y = y;
 }
 
 // GETTERS
