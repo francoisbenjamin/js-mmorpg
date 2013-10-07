@@ -15,7 +15,7 @@ Sorry for my poor english :p
 In order to make it works, you will have to install this modules on your Node.js server with this command :
 
 ```bash
-npm install util express socket.io path mongoose
+npm install util express socket.io path mongoose connect-mongo
 ```
 
 It has to be done in the directory of the server.js
