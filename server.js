@@ -6,18 +6,26 @@
 /***********************
  ** Node.js Requirements
  ***********************/
+var settings = require("./settings/settings").settings;
 
 var path = require("path"),
+Player = require("./server-classes/player/Player").Player,
 express = require("express"),
 app = module.exports = express(),
 util = require("util"),
 http = require('http'),
 server = http.createServer(app),
-port = process.env.PORT || 8000,
-//io = require('socket.io'),
-Player = require("./server-classes/player/Player").Player;
+mongoStore = require('connect-mongo')(express),
+mongoose = require("mongoose"),
+port = process.env.PORT || settings.port;
 module.exports = { app: app, server: server,};
 var sockets;
+
+/*******************
+ ** Databases Schema
+ *******************/
+var playerSchema;
+var playerModel;
 
 /******************
  ** Game variables
@@ -128,11 +136,63 @@ function playerById(id) {
  ** Game initialization
  **********************/
 function init(){
+	/*************************
+	 ** Database configuration
+	 *************************/
+	/* WIP */
+	mongoose.connect("mongodb://localhost/js-mmorpg/database", function(err){
+		if(err){ throw err;}
+	});
+	
+	// The data for the player in the database
+	playerSchema = new mongoose.Schema({
+		name : String,
+		level : {type : Number, default : 1, min : 1, max: 99},
+		spawn_x : {type : Number, default : 100},
+		spawn_y : {type : Number, default : 100},
+		hp : Number,
+		x : {type : Number, default : 100},
+		y : {type : Number, default : 100},
+		exp : {type : Number, default : 0, min: 0},
+		last_log : Date
+		});
+	
+	// The player model for the data
+	playerModel = mongoose.model('player', playerSchema);
+	// Create a line
+	var newplayer = new playerModel({ name : 'Shinochi'});
+	newplayer.level = 10;
+	newplayer.spawn_x = 50;
+	newplayer.spawn_y = 40;
+	newplayer.x = 50;
+	newplayer.y = 90;
+	newplayer.exp = 100;
+
+	// Insert into the database
+	newplayer.save(function (err) {
+	  if (err) { throw err; }
+	  console.log('Player added !');
+	  // Close mongoDB connection
+	  mongoose.connection.close();
+	});
+	
+	/* END WIP */
+	
 	/***********************
 	 ** Server configuration
 	 ***********************/
 	app.configure(function() {
 		this.use(express.static(path.join(__dirname, '/public')));
+		// Allow parsing cookies from request headers
+		this.use(express.cookieParser());
+		
+		// Session Management
+		this.use(express.session({
+			// Private crypting key
+			// You'll need to change it
+			"secret" : settings.secret,
+			"store" : new mongoStore({db : settings.db})
+		}));
 	});
 	
 	app.configure('development', function(){
@@ -154,7 +214,9 @@ function init(){
 	sockets = require('socket.io').listen(server, {"log level" : 2});
 	
 	server.listen(port, function () {
-	     util.log('Server started successfully on '+ port + '!');
+		 util.log('############################################');
+	     util.log(' Server started successfully on '+ port + '!');
+	     util.log('############################################');
 	   });
 	
 	setEventHandlers();

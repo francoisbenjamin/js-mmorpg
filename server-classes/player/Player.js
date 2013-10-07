@@ -7,6 +7,7 @@
 function Player(name, x, y){
 	this.id;
 	this.level = 1;
+	this.exp;
 	this.name = name;
 	this.hpMax;
 	this.hp;
@@ -55,6 +56,13 @@ Player.prototype.getName = function(){
 	return this.name;
 };
 
+/**
+ * Get the player's experience
+ * @returns {Number}
+ */
+Player.prototype.getExp = function(){
+	return this.exp;
+};
 // SETTERS
 /**
  * Set the level of the player
@@ -86,6 +94,19 @@ Player.prototype.setX = function(x){
  */
 Player.prototype.setY = function(y){
 	this.y = y;
+};
+
+/**
+ * Set the new exp value
+ * @param exp {Number}
+ */
+Player.prototype.setExp = function(exp){
+	if(!isNaN(exp)){
+		this.exp = exp;
+	}
+	else {
+		throw new Error("The experience must be a Number.");
+	}
 };
 
 exports.Player = Player;
