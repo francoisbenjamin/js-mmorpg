@@ -3,29 +3,37 @@
  * @author Benjamin François 
  */
 
-/**
- * Node.js Requirements
- */
-var util = require("util"),
+/***********************
+ ** Node.js Requirements
+ ***********************/
+
+var path = require("path"),
+express = require("express"),
+app = module.exports = express(),
+util = require("util"),
 http = require('http'),
-io = require('socket.io'),
+server = http.createServer(app),
+port = process.env.PORT || 8000,
+//io = require('socket.io'),
 Player = require("./server-classes/player/Player").Player;
+module.exports = { app: app, server: server,};
+var sockets;
 
 /******************
  ** Game variables
  *****************/
 var players = [];
-var server;
+//var server;
 
 /**********************
  ** Game event handlers
  **********************/
 function setEventHandlers(){
-	server.sockets.on("connection", onSocketConnection);
+	sockets.on("connection", onSocketConnection);
 }
 
 function onSocketConnection(client){
-	util.log("New player has connected : " + client.id);
+	util.log("A new player has connected : " + client.id);
 	
 	// Listen for client disconnected
 	client.on("disconnect", onClientDisconnect);
@@ -39,15 +47,16 @@ function onSocketConnection(client){
 
 // Socket client has disconnected
 function onClientDisconnect(){
-	util.log("Player has disconnected : " + this.id);
-	
 	var removePlayer = playerById(this.id);
-
+	
 	// Player not found
 	if (!removePlayer) {
 		util.log("Player not found: "+ this.id);
 		return;
-	};
+	}
+	else {
+		util.log("'"+removePlayer.getName() +"' has disconnected : " + this.id);
+	}
 
 	// Remove player from players array
 	players.splice(players.indexOf(removePlayer), 1);
@@ -77,9 +86,9 @@ function onMovePlayer(data) {
 
 //New player has joined
 function onNewPlayer(data) {
-	util.log("Added "+ data.name +" : " + this.id + " on x : " + data.x + " y : " + data.y);
+	util.log("'" + data.name +"' has connected  id : " + this.id + " coord :  x : " + data.x + " y : " + data.y);
 	// Create a new player
-	var newPlayer = new Player(data.x, data.y);
+	var newPlayer = new Player(data.name, data.x, data.y);
 	newPlayer.id = this.id;
 
 	// Broadcast new player to connected socket clients
@@ -119,16 +128,34 @@ function playerById(id) {
  ** Game initialization
  **********************/
 function init(){
-	// listen for new web clients:
-	server = io.listen(8000);
-
-	// Configuration of the server
-	server.configure(function() {
-		server.set('port', process.env.PORT || 5000);
-		server.set("transports", ["websocket"]);
-		// Restrict log output
-		server.set("log level", 2);
+	/***********************
+	 ** Server configuration
+	 ***********************/
+	app.configure(function() {
+		this.use(express.static(path.join(__dirname, '/public')));
 	});
+	
+	app.configure('development', function(){
+	  this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+	});
+	
+	app.configure('production', function(){
+	  this.use(express.errorHandler());
+	});
+	
+	// Configuration of the server
+	app.configure(function() {
+		app.set('port', port);
+		app.set("transports", ["websocket"]);
+	});
+	
+	// listen for new web client
+	// Set log level to 3 for debug
+	sockets = require('socket.io').listen(server, {"log level" : 2});
+	
+	server.listen(port, function () {
+	     util.log('Server started successfully on '+ port + '!');
+	   });
 	
 	setEventHandlers();
 }
