@@ -4,7 +4,7 @@ js-mmorpg
 A small project with Pixi.js and Node.js, it will be a basic mmorpg in HTML5 and Javascript    
 Sorry for my poor english :p
 
-*10/07/2013 : the project don't support yet mongoDB. The next feature will be the sessions for the players*
+*10/07/2013 : the project don't support mongoDB yet. The next feature will be the sessions for the players*
 
 
 ##Installation
