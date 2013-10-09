@@ -4,6 +4,10 @@ js-mmorpg
 A small project with Pixi.js and Node.js, it will be a basic mmorpg in HTML5 and Javascript    
 Sorry for my poor english :p
 
+For the assets of the game, I use [Shoebox](http://renderhjs.net/shoebox/ "Shoebox"), it's a free and very powerfull tool.    
+It allow you to create SpriteSheets, Slice9, Bitmap fonts and other things. You should try it !
+
+*10/09/2013 : started the ScreenManager class*
 *10/07/2013 : the project don't support mongoDB yet. The next feature will be the sessions for the players*
 
 

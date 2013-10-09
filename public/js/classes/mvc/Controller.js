@@ -7,6 +7,7 @@
 function Controller(view, model){
     var _view = this.view = view;
     this.model = model;
+    this.screenManager = new ScreenManager();
     var scope = this;
     /******************
      ** Load the assets

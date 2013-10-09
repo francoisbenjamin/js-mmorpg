@@ -2,7 +2,9 @@
 <html>
     <head>
         <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="./css/fonts.css" />
 		<link rel="stylesheet" type="text/css" href="./css/main.css" />
+		<link rel="stylesheet" type="text/css" href="./css/slice_textbox.css" />
         <!--[if lt IE 9]>
             <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
@@ -18,6 +20,8 @@
         <script src="js/classes/animation/AdvancedMovieClip.js"></script>
         <!-- Player -->
         <script src="js/classes/player/Player.js"></script>
+        <!-- ScreenManager -->
+        <script src="js/classes/screens/ScreenManager.js"></script>
         <!-- MVC Because it's fun right ? -->
         <script src="./js/classes/mvc/Model.js"></script>
         <script src="./js/classes/mvc/View.js"></script>
@@ -29,8 +33,11 @@
         <meta name="author" content="Benjamin 'Shinochi' FRANÇOIS">
         <title>Awesome game... let's try</title>
     </head>
-    
+        		<div id ="log-in" style =" bottom: 200px;
+			  left: 0;
+			  position: absolute;
+			  width: 100%;"><input name ="login" maxlength="32"class="textbox" type="text"/><input name="password" type="password" maxlength="32" class="textbox" type="text"/></div>
     <body>
-    
+
     </body>
 </html>

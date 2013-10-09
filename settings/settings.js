@@ -8,7 +8,7 @@ var settings = {
 		// Private crypting key
 		// You'll need to change it
 		secret : "_js-mm0rpg_1s_4mazing_",
-		port : 5000
+		port : 8000
 };
 
 exports.settings = settings;
