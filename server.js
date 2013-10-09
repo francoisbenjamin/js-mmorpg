@@ -24,6 +24,8 @@ var sockets;
 /*******************
  ** Databases Schema
  *******************/
+var accountSchema;
+var accountModel;
 var playerSchema;
 var playerModel;
 
@@ -154,9 +156,19 @@ function init(){
 		x : {type : Number, default : 100},
 		y : {type : Number, default : 100},
 		exp : {type : Number, default : 0, min: 0},
-		last_log : Date
+		
 		});
 	
+	accountSchema = new mongoose.Schema({
+		login : {},
+		password : {},
+		email: String,
+		players : [playerSchema],
+		last_log : Date
+	});
+	
+	// The account model
+	accountModel = mongoose.model('account', accountSchema);
 	// The player model for the data
 	playerModel = mongoose.model('player', playerSchema);
 	// Create a line

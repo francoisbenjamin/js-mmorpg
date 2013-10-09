@@ -10,3 +10,8 @@ html
 {
     color: black;
 }
+
+.game_title{
+	font-family: 'Minecraftia',sans-serif;
+	color: white;
+}
