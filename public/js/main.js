@@ -1,6 +1,6 @@
 /**
  * Main file
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois 
  */
 $(document).ready(function(){
     var view = new View(new Model(),'#000000', true);

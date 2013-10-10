@@ -2,7 +2,7 @@
  * The controller of the game, it need to know the view and the model
  * @param view {View}
  * @param model {Model}
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois
  */
 function Controller(view, model){
     var _view = this.view = view;

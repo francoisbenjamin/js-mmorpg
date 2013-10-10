@@ -1,7 +1,7 @@
 /**
  * The main View of the game
  * it need to know the model and extends the PIXI.Stage class
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois
  */
  
  function View(model, backgroundColor, interactive){

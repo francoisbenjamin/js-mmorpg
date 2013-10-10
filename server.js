@@ -1,6 +1,6 @@
 /**
  * The server of the game
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois
  */
 
 /***********************
@@ -142,13 +142,13 @@ function init(){
 	 ** Database configuration
 	 *************************/
 	/* WIP */
-	mongoose.connect("mongodb://localhost/js-mmorpg/database", function(err){
+	mongoose.connect("mongodb://localhost/js-mmorpg", function(err){
 		if(err){ throw err;}
 	});
 	
 	// The data for the player in the database
 	playerSchema = new mongoose.Schema({
-		name : String,
+		name : {type: String, unique: true},
 		level : {type : Number, default : 1, min : 1, max: 99},
 		spawn_x : {type : Number, default : 100},
 		spawn_y : {type : Number, default : 100},
@@ -160,9 +160,9 @@ function init(){
 		});
 	
 	accountSchema = new mongoose.Schema({
-		login : {},
-		password : {},
-		email: String,
+		login : {type: String, unique: true},
+		password : {type: String},
+		email: {type: String, match: /^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$/},
 		players : [playerSchema],
 		last_log : Date
 	});
@@ -171,22 +171,31 @@ function init(){
 	accountModel = mongoose.model('account', accountSchema);
 	// The player model for the data
 	playerModel = mongoose.model('player', playerSchema);
+	// Create an admin account
+	
+	var newAccount = new accountModel({name:'admin', login: 'admin'});
+	newAccount.save(function (err) {
+		  if (err) { throw err; }
+		  console.log('Account added !');
+		  // Close mongoDB connection
+		  mongoose.connection.close();
+		});
 	// Create a line
-	var newplayer = new playerModel({ name : 'Shinochi'});
-	newplayer.level = 10;
-	newplayer.spawn_x = 50;
-	newplayer.spawn_y = 40;
-	newplayer.x = 50;
-	newplayer.y = 90;
-	newplayer.exp = 100;
+//	var newplayer = new playerModel({ name : 'Shinochi'});
+//	newplayer.level = 10;
+//	newplayer.spawn_x = 50;
+//	newplayer.spawn_y = 40;
+//	newplayer.x = 50;
+//	newplayer.y = 90;
+//	newplayer.exp = 100;
 
 	// Insert into the database
-	newplayer.save(function (err) {
-	  if (err) { throw err; }
-	  console.log('Player added !');
-	  // Close mongoDB connection
-	  mongoose.connection.close();
-	});
+//	newplayer.save(function (err) {
+//	  if (err) { throw err; }
+//	  console.log('Player added !');
+//	  // Close mongoDB connection
+//	  mongoose.connection.close();
+//	});
 	
 	/* END WIP */
 	

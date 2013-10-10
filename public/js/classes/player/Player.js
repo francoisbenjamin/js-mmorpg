@@ -4,7 +4,7 @@
  * @param spawn {PIXI.Point} the coordinate of the spawn point for the player
  * @param name {String} the player's name
  * @param texture {String}
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois
  */
 function Player(spawn, name, frameRate, firstSequence){
 	this.sequences = {

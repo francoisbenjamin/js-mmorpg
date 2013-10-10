@@ -2,7 +2,7 @@
  * Game Player Class
  * extends {PIXI.Sprite}
  * @param texture {String}
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois 
  */
 function Player(name, x, y){
 	this.id;

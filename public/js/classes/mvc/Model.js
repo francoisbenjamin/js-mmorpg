@@ -1,7 +1,7 @@
 /**
  * The Model of the game
  * it contains the local data of the game
- * @author Benjamin François 
+ * @author Benjamin FranÃ§ois
  */
 function Model(){
 	this.remotePlayers = [];
