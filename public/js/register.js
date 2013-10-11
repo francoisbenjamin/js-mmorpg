@@ -18,7 +18,20 @@ function validForm(){
 		valid = false;
 	}
 	else {
-		// TODO Check if the login exist
+		// Check if the account don't exist already
+		$.ajax({
+			type: "POST",
+			async: false,
+			data: { login: $.trim($("#login").val())},
+			url: "inc/getAccount.inc.php",
+			dataType: "json",
+			success: function(data){
+				if(data.exist){
+					error_msg += "The login exist already.<br/>";
+					valid = false;
+				}
+			}
+		});
 	}
 	
 	// Password part
@@ -27,20 +40,19 @@ function validForm(){
 		error_msg += "The password can't be empty.<br/>";
 		valid = false;
 	}else {
-		if($("#password").val() != $("#password_confimartion").val()){
-			error_msg += "The password must be the same.\n";
+		if($("#password").val() != $("#password_confirmation").val()){
+			error_msg += "The password must be the same.<br/>";
 			valid = false;
 		}
 	}
 	
 	// Email part
-	
 	if(!$.trim($("#email").val()).length){
 		error_msg += "The email can't be empty.<br/>";
 		valid = false;
 	}else {
-		if($("#email").val() != $("#email_confimartion").val()){
-			error_msg += "The email must be the same.\n";
+		if($("#email").val() != $("#email_confirmation").val()){
+			error_msg += "The email must be the same.<br/>";
 			valid = false;
 		}
 	}

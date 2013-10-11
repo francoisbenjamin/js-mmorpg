@@ -4,8 +4,7 @@
 	 * @author Benjamin François
 	 */
 	$dbhost = 'localhost';
-	$dbname = 'js-mmorpg'
+	$dbname = 'js-mmorpg';
 	$con = new Mongo("mongodb://$dbhost");
-	$db = $con->js-mmorpg;
-	var_dump($con->listDBs());
+	$db = $con->$dbname;
 ?> 

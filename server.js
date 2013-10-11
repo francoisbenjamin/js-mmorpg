@@ -164,16 +164,16 @@ function init(){
 		password : {type: String},
 		email: {type: String, match: /^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$/},
 		players : [playerSchema],
-		last_log : Date
+		last_log : {type: Date}
 	});
 	
 	// The account model
-	accountModel = mongoose.model('account', accountSchema);
+	accountModel = mongoose.model('accounts', accountSchema);
 	// The player model for the data
-	playerModel = mongoose.model('player', playerSchema);
+	playerModel = mongoose.model('players', playerSchema);
 	// Create an admin account
 	
-	var newAccount = new accountModel({name:'admin', login: 'admin'});
+	var newAccount = new accountModel({login:'admin', password: 'admin', last_log: Date.now()});
 	newAccount.save(function (err) {
 		  if (err) { throw err; }
 		  console.log('Account added !');

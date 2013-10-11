@@ -36,7 +36,7 @@
     			<label>Confirm email : </label>
     			<input id="email_confirmation" name="email_confirmation" type="email" pattern="^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$"  placeholder="youremail@.com" required/>
     			<br/>
-    			<button id="submit" class="btn btn-primary">Register</button>
+    			<a id="submit" class="btn btn-primary">Register</a>
     		</form>
     	</div>
 
