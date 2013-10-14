@@ -148,7 +148,7 @@ function init(){
 	
 	// The data for the player in the database
 	playerSchema = new mongoose.Schema({
-		name : {type: String, unique: true},
+		name : String,
 		level : {type : Number, default : 1, min : 1, max: 99},
 		spawn_x : {type : Number, default : 100},
 		spawn_y : {type : Number, default : 100},
@@ -166,20 +166,36 @@ function init(){
 		players : [playerSchema],
 		last_log : {type: Date}
 	});
-	
+
 	// The account model
 	accountModel = mongoose.model('accounts', accountSchema);
+	accountModel.findOne({login: 'admin'}, function (err, user) {
+		  if (err) {
+		     console.log(err.name);
+		     return;
+		  }
+		  
+		  if (!user){
+			// Create an admin account if it doesn't exist
+			var newAccount = new accountModel();
+			newAccount.login = 'admin';
+			newAccount.password = 'admin';
+			newAccount.last_log =  Date.now();
+			newAccount.save(function (err) {
+				  if (err) { throw err; }
+				  util.log('Account added !');
+				});
+			
+		    return;
+		  }
+		});
 	// The player model for the data
 	playerModel = mongoose.model('players', playerSchema);
-	// Create an admin account
 	
-	var newAccount = new accountModel({login:'admin', password: 'admin', last_log: Date.now()});
-	newAccount.save(function (err) {
-		  if (err) { throw err; }
-		  console.log('Account added !');
-		  // Close mongoDB connection
-		  mongoose.connection.close();
-		});
+	// Close mongoDB connection
+	mongoose.connection.close();
+	
+	
 	// Create a line
 //	var newplayer = new playerModel({ name : 'Shinochi'});
 //	newplayer.level = 10;
@@ -212,7 +228,7 @@ function init(){
 			// Private crypting key
 			// You'll need to change it
 			"secret" : settings.secret,
-			"store" : new mongoStore({db : settings.db})
+			"store" : new mongoStore({db : settings.db,  port: settings.db_port})
 		}));
 	});
 	

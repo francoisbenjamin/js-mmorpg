@@ -5,6 +5,7 @@
 	 */
 	$dbhost = 'localhost';
 	$dbname = 'js-mmorpg';
-	$con = new Mongo("mongodb://$dbhost");
-	$db = $con->$dbname;
+	$dbport = 27017;
+	$con = new Mongo("mongodb://$dbhost:$dbport");
+	$db = $con->selectDB($dbname);
 ?> 

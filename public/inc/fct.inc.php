@@ -51,7 +51,6 @@
 		// If valid, add in the database
 		if($valid){
 			addAccount(array("login"=>$login, "password"=>$password, "email"=>$email));
-			echo"gg";
 		}
 		else {
 			header("location:../register.php");
@@ -64,13 +63,36 @@
 	 */
 	function addAccount($account){
 		include "/settings/settings.php";
-		$accounts = $db->accounts;
-		$db->accounts->insert($account);
+		
+		$accounts = $db->selectCollection("accounts");
+		
+		$insertOptions = array(
+				'safe'    => true,
+				'fsync'   => true,
+				'timeout' => 10000
+		);
+		
+		try{
+			$accounts->insert($account);
+			echo"gg";
+		}
+		catch(MongoCursorException $e){
+			echo $e->getMessage()."<br/>";
+			exit();
+		}
+		catch (MongoCursorTimeoutException $e){
+			echo $e->getMessage()."<br/>";
+			exit();
+		}
+		
+		foreach ($accounts->find() as $doc){
+			var_dump($doc);
+		}
 	}
 	
 	function accountExist($account){
 		include "/settings/settings.php";
-		$accounts = $db->accounts;
+		$accounts = $con->selectCollection($dbname,"accounts");
 		$exist = false;
 		$user = array (
 			'login' => $account
