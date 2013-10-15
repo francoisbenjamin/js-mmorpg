@@ -3,8 +3,8 @@
  */
 function ScreenManager(){
 	// TODO WIP
-	this.currentScreen = null;
-	this.screenList = [];
+	this.screenList = ["login", "game"];
+	this.currentScreen = this.screenList[0];
 }
 
 // GETTERS

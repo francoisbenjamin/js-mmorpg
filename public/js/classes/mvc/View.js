@@ -8,8 +8,8 @@
     PIXI.Stage.call(this, backgroundColor, interactive);
     this.model = model;
     this.hud;
-    this.gameScreenWidth = 800;
-    this.gameScreenHeight = 600;
+    this.gameScreenWidth = $(document).width();
+    this.gameScreenHeight = $(document).height();
     this.renderer = PIXI.autoDetectRenderer(this.gameScreenWidth, this.gameScreenHeight, null);
  }
  

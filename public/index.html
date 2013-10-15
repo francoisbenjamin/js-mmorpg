@@ -3,8 +3,8 @@
     <head>
         <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="./css/fonts.css" />
+		<link rel="stylesheet" type="text/css" href="./css/inputs.css" />
 		<link rel="stylesheet" type="text/css" href="./css/main.css" />
-		<link rel="stylesheet" type="text/css" href="./css/slice_textbox.css" />
         <!--[if lt IE 9]>
             <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
@@ -34,14 +34,13 @@
         <meta name="author" content="Benjamin 'Shinochi' FRANÇOIS">
         <title>Awesome game... let's try</title>
     </head>
-        		<div id ="log-in" style =" bottom: 200px;
-			  left: 0;
-			  position: absolute;
-			  width: 100%;"><input name ="login" maxlength="32"class="textbox" type="text"/><input name="password" type="password" maxlength="32" class="textbox" type="text"/></div>
+        	
     <body>
-    	<div class="game_title">
-    		<h1>JS MMORPG</h1>
-    	</div>
-
+    <div id ="log-in">
+    	<div class="error"></div>
+	    <input id="login" name ="login" maxlength="32" class="textbox" type="text" autocomplete="off"/>
+	    <input id="password" name="password" type="password" maxlength="32" class="textbox" autocomplete="off"/>
+	    <input type="button" id ="submit" class="button btn-small" value="Sign In"/>
+    </div>
     </body>
 </html>

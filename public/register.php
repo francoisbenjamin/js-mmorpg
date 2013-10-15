@@ -19,7 +19,7 @@
     <body>
     		<h1>Registration Page</h1>
     	<div>
-    		<div id="error" style="display:none; margin : 0 auto; width: 300px; text-align: center;" class="alert alert-error alert-block">Random error</div>
+    		<div id="error" style="display:none; margin : 0 auto; width: 300px; text-align: center;" class="alert alert-error alert-block"></div>
     		<form id="registration" name="registration" method="POST" action="addAccount.php">
     			<label>Login : </label>
     			<input id="login" name="login" type="text" placeholder="Login" autofocus required/>

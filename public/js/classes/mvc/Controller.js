@@ -17,7 +17,7 @@ function Controller(view, model){
 	this.loader.onComplete = onAssetsLoaded;
 	this.loader.load();
     
-    var _socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+    var _socket;
     // Add the stage to the page
     document.body.appendChild(view.getRenderer().view);
     
@@ -69,6 +69,11 @@ function Controller(view, model){
     	_view.getModel().getRemotePlayers().splice(_view.getModel().getRemotePlayers().indexOf(removePlayer), 1);
     };
     
+ // Browser window resize
+    function onResize(e) {
+    	_view.getRenderer().resize(window.innerWidth,  window.innerHeight);
+    };
+    
     /**
      * Socket disconnected
      */
@@ -77,6 +82,8 @@ function Controller(view, model){
     };
     
     var setEventHandlers = function(){
+    	// Window resize
+    	$(window).resize(onResize);
     	// Socket connection successful
     	_socket.on("connect", onSocketConnected);
     	
@@ -88,6 +95,7 @@ function Controller(view, model){
     	
     	// Player removed message received
     	_socket.on("remove player", onRemovePlayer);
+    	
     };
     
     /***********************
@@ -105,6 +113,7 @@ function Controller(view, model){
     	return false;
     };
     
+    
     /**
      * Main loop
      */
@@ -114,10 +123,62 @@ function Controller(view, model){
     };
     
     /**
+     * Check if the client can sign in
+     */
+    function onSubmit(){
+    	var error_msg = "";
+    	var valid = true;
+    	
+    	// Login part
+    	if(!$.trim($("#login").val()).length){
+    		error_msg += "The login can't be empty.<br/>";
+    		valid = false;
+    	}
+    	
+    	// Password part
+    	if(!$.trim($("#password").val()).length){
+    		error_msg += "The password can't be empty.<br/>";
+    		valid = false;
+    	}
+    	
+    	if(valid){
+    		$.ajax({
+    			type: "POST",
+    			async: false,
+    			data: { login: $.trim($("#login").val()), password: $.trim($("#password").val())},
+    			url: "inc/connexion.inc.php",
+    			dataType: "json",
+    			success: function(data){
+    				if(!data.signIn){
+    					$(".error").show();
+    					$(".error").html("The login or the password is not valid.");
+    					valid = false;
+    				}
+    				else {
+    					$("#log-in").hide();
+    				}
+    			}
+    		});
+    	}
+    	else {
+    		$(".error").show();
+			$(".error").html(error_msg);
+    	}
+    	
+    	
+    }
+    
+    /**
      * When the assets are loaded, start the game
      */
     function onAssetsLoaded(){
-	 // Set the local player to the spawn
+    	// Display the login hud
+    	$('#login').show();
+    	// Wait for login
+    	$('#submit').click(onSubmit);
+    	
+    	_socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+    	// Set the local player to the spawn
 	    _view.getModel().setLocalPlayer(new Player(_view.getModel().getSpawn(), "Shinochi", 60));
 	    _view.addEntity(_view.getModel().getLocalPlayer());
 	    setEventHandlers();
@@ -138,4 +199,11 @@ Controller.prototype.ignoreUser = function(){
  */
 Controller.prototype.listenUser = function(){
 	Mousetrap.unpause();
+};
+
+/**
+ * Reset the game
+ */
+Controller.prototype.reset = function(){
+	// TODO reset the game
 };

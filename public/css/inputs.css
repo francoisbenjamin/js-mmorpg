@@ -1,0 +1,28 @@
+.textbox {
+	border-style: solid;
+	border-width: 4px 4px 4px 4px;
+	border-image: url(slice_textbox.png) 4 4 4 4 fill stretch;
+}
+
+input[type=text], input[type=password], .button{
+	font-family: 'Minecraftia', Arial, sans-serif;
+	font-size: 1.5em;
+	background-color: transparent;
+}
+
+/*
+	BUTTONS
+*/
+.button {
+	border-style: solid;
+	border-width: 12px 33px 12px 33px;
+	border-image: url(slice_button_00.png) 12 33 12 33 fill stretch;
+	cursor: pointer;
+}
+
+.btn-small{
+	padding-top: -5px;
+	background-image: url(button.png) 26px 33px 0px 33px;
+	color: white;
+	font-size: 1.1em;
+}

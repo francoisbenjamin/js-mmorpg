@@ -141,14 +141,14 @@ function init(){
 	/*************************
 	 ** Database configuration
 	 *************************/
-	/* WIP */
+	// TODO Add an user for the database
 	mongoose.connect("mongodb://localhost/js-mmorpg", function(err){
 		if(err){ throw err;}
 	});
 	
 	// The data for the player in the database
 	playerSchema = new mongoose.Schema({
-		name : String,
+		name : {type : String, unique: true},
 		level : {type : Number, default : 1, min : 1, max: 99},
 		spawn_x : {type : Number, default : 100},
 		spawn_y : {type : Number, default : 100},

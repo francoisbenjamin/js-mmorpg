@@ -52,9 +52,7 @@
 		if($valid){
 			addAccount(array("login"=>$login, "password"=>$password, "email"=>$email));
 		}
-		else {
-			header("location:../register.php");
-		}
+		header("location:register.php");
 	}
 	
 	/**
@@ -74,7 +72,6 @@
 		
 		try{
 			$accounts->insert($account);
-			echo"gg";
 		}
 		catch(MongoCursorException $e){
 			echo $e->getMessage()."<br/>";
@@ -84,12 +81,35 @@
 			echo $e->getMessage()."<br/>";
 			exit();
 		}
-		
-		foreach ($accounts->find() as $doc){
-			var_dump($doc);
-		}
 	}
 	
+	/**
+	 * Check if the account can sign in
+	 * @param Array $account
+	 * @return boolean true if the client can sign in
+	 */
+	function checkAccount($login, $password){
+		include "/settings/settings.php";
+		$accounts = $con->selectCollection($dbname, "accounts");
+		$valid = false;
+		$user = array(
+			'login' => $login,
+			'password' => $password
+		);
+		$user = $accounts->findOne($user);
+		
+		if(strtoupper($user['login']) == strtoupper($login) && strtoupper($user['password']) == strtoupper($password)){
+			$valid = true;
+		}
+		
+		return $valid;
+	}
+	
+	/**
+	 * Check if the account exist
+	 * @param Array $account
+	 * @return boolean
+	 */
 	function accountExist($account){
 		include "/settings/settings.php";
 		$accounts = $con->selectCollection($dbname,"accounts");
@@ -107,4 +127,15 @@
 
 		return $exist;
 	}
+	
+	/**
+	 * Create a new player
+	 * @param Array $player
+	 */
+	function createNewplayer($player){
+		include "/settings/settings.php";
+		// TODO Complete the creation of the player
+	}
+	
+	
 ?>

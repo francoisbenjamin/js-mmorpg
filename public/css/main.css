@@ -1,17 +1,30 @@
 /* Main Style */
-body {
+html, body {
 	text-align: center;
 	margin: 0;
 	padding: 0;
-	background-color: #685151;
+	background-color: black;
 }
 
-html
-{
-    color: black;
+html {
+	color: black;
 }
 
-.game_title{
-	font-family: 'Minecraftia',sans-serif;
+.game_title {
+	font-family: 'Minecraftia', sans-serif;
 	color: white;
+}
+
+#log-in {
+	line-height: 2;
+	padding: 2px;
+	bottom: 200px;
+	left: 0;
+	position: absolute;
+	width: 100%;
+}
+
+.error{
+	font-family: 'Minecraftia', sans-serif;
+	color: red;
 }
