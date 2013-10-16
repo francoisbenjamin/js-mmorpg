@@ -3,6 +3,6 @@
  * @author Benjamin François 
  */
 $(document).ready(function(){
-    var view = new View(new Model(),'#000000', true);
+    var view = new View(new Model(),'ffffff', true);
     new Controller(view, view.getModel());
 });

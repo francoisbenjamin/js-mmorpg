@@ -155,7 +155,8 @@ function Controller(view, model){
     					valid = false;
     				}
     				else {
-    					$("#log-in").hide();
+    					// The client is authentified
+    					authentified();
     				}
     			}
     		});
@@ -173,7 +174,8 @@ function Controller(view, model){
      */
     function onAssetsLoaded(){
     	// Display the login hud
-    	$('#login').show();
+    	$('#log-in').show();
+    	$('#log-in').css('display','block');
     	// Wait for login
     	$('#submit').click(onSubmit);
     	
@@ -184,6 +186,13 @@ function Controller(view, model){
 	    setEventHandlers();
 	    requestAnimFrame(scope.main);
     };
+    
+    /**
+     * 
+     */
+    function authentified(){
+    	$("#log-in").hide();
+    }
 }
 
 /**

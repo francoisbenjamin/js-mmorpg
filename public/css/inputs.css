@@ -4,16 +4,26 @@
 	border-image: url(slice_textbox.png) 4 4 4 4 fill stretch;
 }
 
-input[type=text], input[type=password], .button{
+input[type=text], input[type=password]{
 	font-family: 'Minecraftia', Arial, sans-serif;
-	font-size: 1.5em;
+	font-size: 1.1em;
 	background-color: transparent;
+	width: 100%;
+	max-width: 300px;
+}
+
+.hud-background{
+	background-color: #363b48;
+	opacity: 0.5;
 }
 
 /*
 	BUTTONS
 */
 .button {
+	font-family: 'Minecraftia', Arial, sans-serif;
+	font-size: 1.1em;
+	background-color: transparent;
 	border-style: solid;
 	border-width: 12px 33px 12px 33px;
 	border-image: url(slice_button_00.png) 12 33 12 33 fill stretch;
@@ -21,8 +31,8 @@ input[type=text], input[type=password], .button{
 }
 
 .btn-small{
-	padding-top: -5px;
 	background-image: url(button.png) 26px 33px 0px 33px;
 	color: white;
 	font-size: 1.1em;
+	opacity: 1;
 }
