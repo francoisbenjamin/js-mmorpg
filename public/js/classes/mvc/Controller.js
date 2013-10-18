@@ -81,6 +81,25 @@ function Controller(view, model){
     	console.log("Disconnected from socket server");
     };
     
+    /**
+     * 
+     */
+    function authentified(_login){
+    	_socket.emit("authentification", {login : _login}, function(result){
+    		// If the account is not online already
+    		if(!result.exist){
+    			// Character view
+    			$("#log-in").hide();
+    			$(".error").hide();
+    		}else {
+    			// Show the login view again
+    			$(".error").show();
+    			$(".error").html("The account is already online");
+    		}
+    	});
+    	console.log("trying to connect...");
+    }
+    
     var setEventHandlers = function(){
     	// Window resize
     	$(window).resize(onResize);
@@ -95,7 +114,6 @@ function Controller(view, model){
     	
     	// Player removed message received
     	_socket.on("remove player", onRemovePlayer);
-    	
     };
     
     /***********************
@@ -156,7 +174,7 @@ function Controller(view, model){
     				}
     				else {
     					// The client is authentified
-    					authentified();
+    					authentified($.trim($("#login").val()));
     				}
     			}
     		});
@@ -186,13 +204,6 @@ function Controller(view, model){
 	    setEventHandlers();
 	    requestAnimFrame(scope.main);
     };
-    
-    /**
-     * 
-     */
-    function authentified(){
-    	$("#log-in").hide();
-    }
 }
 
 /**

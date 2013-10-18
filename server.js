@@ -11,15 +11,14 @@ var settings = require("./settings/settings").settings;
 var path = require("path"),
 Player = require("./server-classes/player/Player").Player,
 express = require("express"),
-app = module.exports = express(),
+app = express(),
 util = require("util"),
 http = require('http'),
-server = http.createServer(app),
+//server = http.createServer(app),
 mongoStore = require('connect-mongo')(express),
 mongoose = require("mongoose"),
 port = process.env.PORT || settings.port;
-module.exports = { app: app, server: server,};
-var sockets;
+var server, io;
 
 /*******************
  ** Databases Schema
@@ -39,12 +38,24 @@ var players = [];
  ** Game event handlers
  **********************/
 function setEventHandlers(){
-	sockets.on("connection", onSocketConnection);
+	io.sockets.on("connection", onSocketConnection);
+}
+
+/**
+ * Check if the user is not already logged in
+ * @param obj
+ * @param callback
+ * @returns boolean
+ */
+function onAuthAccount(client, callback) {
+	var dt=new Date();
+	util.log("An attempt of connection of the account : " + client.login + " at " + dt.toLocaleString());
+	callback({ exist: true });
 }
 
 function onSocketConnection(client){
 	util.log("A new player has connected : " + client.id);
-	
+	client.on("authentification", onAuthAccount);
 	// Listen for client disconnected
 	client.on("disconnect", onClientDisconnect);
 	
@@ -148,7 +159,7 @@ function init(){
 	
 	// The data for the player in the database
 	playerSchema = new mongoose.Schema({
-		name : {type : String, unique: true},
+		name : {type : String, unique: true , dropDups: true},
 		level : {type : Number, default : 1, min : 1, max: 99},
 		spawn_x : {type : Number, default : 100},
 		spawn_y : {type : Number, default : 100},
@@ -160,7 +171,7 @@ function init(){
 		});
 	
 	accountSchema = new mongoose.Schema({
-		login : {type: String, unique: true},
+		login : {type: String, unique: true, dropDups: true},
 		password : {type: String},
 		email: {type: String, match: /^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$/},
 		players : [playerSchema],
@@ -172,11 +183,10 @@ function init(){
 	accountModel.findOne({login: 'admin'}, function (err, user) {
 		  if (err) {
 		     console.log(err.name);
-		     return;
 		  }
 		  
+		  // Create an admin account if it doesn't exist
 		  if (!user){
-			// Create an admin account if it doesn't exist
 			var newAccount = new accountModel();
 			newAccount.login = 'admin';
 			newAccount.password = 'admin';
@@ -186,8 +196,8 @@ function init(){
 				  util.log('Account added !');
 				});
 			
-		    return;
 		  }
+		  return;
 		});
 	// The player model for the data
 	playerModel = mongoose.model('players', playerSchema);
@@ -219,17 +229,23 @@ function init(){
 	 ** Server configuration
 	 ***********************/
 	app.configure(function() {
-		this.use(express.static(path.join(__dirname, '/public')));
+		app.set('port', port);
+		app.set("transports", ["websocket"]);
+		app.use(express.static(path.join(__dirname, '/public')));
 		// Allow parsing cookies from request headers
-		this.use(express.cookieParser());
-		
+		app.use(express.cookieParser());
+		app.set("log level" , 2);
 		// Session Management
-		this.use(express.session({
+		app.use(express.session({
 			// Private crypting key
 			// You'll need to change it
-			"secret" : settings.secret,
-			"store" : new mongoStore({db : settings.db,  port: settings.db_port})
+			secret : settings.secret,
+			store : new mongoStore({db : settings.db,  port: settings.db_port}),
+			key: express.sid,
+			maxAge: new Date(Date.now() + 60000 * 10 ),
 		}));
+		app.use(app.router);
+		app.use(express.methodOverride());
 	});
 	
 	app.configure('development', function(){
@@ -240,22 +256,13 @@ function init(){
 	  this.use(express.errorHandler());
 	});
 	
-	// Configuration of the server
-	app.configure(function() {
-		app.set('port', port);
-		app.set("transports", ["websocket"]);
-	});
-	
-	// listen for new web client
-	// Set log level to 3 for debug
-	sockets = require('socket.io').listen(server, {"log level" : 2});
-	
-	server.listen(port, function () {
+	server = app.listen(port, function () {
 		 util.log('############################################');
 	     util.log(' Server started successfully on '+ port + '!');
 	     util.log('############################################');
 	   });
 	
+	io = require('socket.io').listen(server, {"log level": 2});
 	setEventHandlers();
 }
 
