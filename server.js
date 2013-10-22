@@ -14,10 +14,19 @@ express = require("express"),
 app = express(),
 util = require("util"),
 http = require('http'),
-//server = http.createServer(app),
+connect = require('express/node_modules/connect'),
+cookie = require('express/node_modules/cookie'),
 mongoStore = require('connect-mongo')(express),
 mongoose = require("mongoose"),
+sessionStore,
 port = process.env.PORT || settings.port;
+
+var parseCookie = require('connect').utils.parseSignedCookie;
+var mongooseConnection;
+/******************
+ ** Game variables
+ *****************/
+var players = [];
 var server, io;
 
 /*******************
@@ -28,12 +37,6 @@ var accountModel;
 var playerSchema;
 var playerModel;
 
-/******************
- ** Game variables
- *****************/
-var players = [];
-//var server;
-
 /**********************
  ** Game event handlers
  **********************/
@@ -43,19 +46,18 @@ function setEventHandlers(){
 
 /**
  * Check if the user is not already logged in
- * @param obj
- * @param callback
  * @returns boolean
  */
 function onAuthAccount(client, callback) {
-	var dt=new Date();
-	util.log("An attempt of connection of the account : " + client.login + " at " + dt.toLocaleString());
+	util.log("An attempt of connection of the account : " + client.login);
 	callback({ exist: true });
 }
 
 function onSocketConnection(client){
-	util.log("A new player has connected : " + client.id);
+	// Listen for client authentification
 	client.on("authentification", onAuthAccount);
+	client.on("auth", onAuthAccount);
+	
 	// Listen for client disconnected
 	client.on("disconnect", onClientDisconnect);
 	
@@ -72,11 +74,11 @@ function onClientDisconnect(){
 	
 	// Player not found
 	if (!removePlayer) {
-		util.log("Player not found: "+ this.id);
+		util.log("Player not found: " + this.id);
 		return;
 	}
 	else {
-		util.log("'"+removePlayer.getName() +"' has disconnected : " + this.id);
+		util.log("'" + removePlayer.getName() + "' has disconnected : " + this.id);
 	}
 
 	// Remove player from players array
@@ -153,7 +155,7 @@ function init(){
 	 ** Database configuration
 	 *************************/
 	// TODO Add an user for the database
-	mongoose.connect("mongodb://localhost/js-mmorpg", function(err){
+	mongooseConnection = mongoose.connect("mongodb://localhost/js-mmorpg", function(err){
 		if(err){ throw err;}
 	});
 	
@@ -224,28 +226,41 @@ function init(){
 //	});
 	
 	/* END WIP */
+	io = require('socket.io');
+	server =  http.createServer(app);
+	io = io.listen(server, {"log level": 2});
+	sessionStore = new mongoStore({mongoose_connection: mongooseConnection.connections[0],auto_reconnect: true},function(){console.log("connected");});
 	
 	/***********************
 	 ** Server configuration
 	 ***********************/
 	app.configure(function() {
+		app.use(express.bodyParser());
+		app.use(express.cookieParser());
 		app.set('port', port);
 		app.set("transports", ["websocket"]);
+		app.use(app.router);
 		app.use(express.static(path.join(__dirname, '/public')));
 		// Allow parsing cookies from request headers
-		app.use(express.cookieParser());
 		app.set("log level" , 2);
+		
 		// Session Management
 		app.use(express.session({
 			// Private crypting key
 			// You'll need to change it
 			secret : settings.secret,
-			store : new mongoStore({db : settings.db,  port: settings.db_port}),
+			store : sessionStore,
 			key: express.sid,
-			maxAge: new Date(Date.now() + 60000 * 10 ),
+			clear_interval: 3600,
+			cookie: {
+		        maxAge: 600000 // 1 min as example
+		    }
 		}));
-		app.use(app.router);
 		app.use(express.methodOverride());
+	});
+	
+	app.get('/', function (req, res) {
+	    res.sendfile(__dirname + '/index.html');
 	});
 	
 	app.configure('development', function(){
@@ -256,13 +271,38 @@ function init(){
 	  this.use(express.errorHandler());
 	});
 	
-	server = app.listen(port, function () {
+	io.configure('development', function(){
+		  io.set('transports', ['websocket']);
+		});
+	/**
+	 * Authorization
+	 */
+	//SESSION AND COOKIE FOR SOCKET.IO
+	
+	io.set('authorization', function (data, accept) {
+		// check if there's a cookie header
+	    if (data.headers.cookie) {
+	        // if there is, parse the cookie
+	        data.cookie = express.cookieParser(data.headers.cookie, settings.secret);
+	        // note that you will need to use the same key to grad the
+	        // session id, as you specified in the Express setup.
+	        data.sessionID = data.cookie['express.sid'];
+	        console.log(data.sessionID);
+	    } else {
+	       // if there isn't, turn down the connection with a message
+	       // and leave the function.
+	       return accept('No cookie transmitted.', false);
+	    }
+	    // accept the incoming connection
+	    accept(null, true);
+		});
+	server.listen(port, function () {
 		 util.log('############################################');
 	     util.log(' Server started successfully on '+ port + '!');
 	     util.log('############################################');
-	   });
+	});
 	
-	io = require('socket.io').listen(server, {"log level": 2});
+	
 	setEventHandlers();
 }
 

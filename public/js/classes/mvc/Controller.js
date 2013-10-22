@@ -85,12 +85,14 @@ function Controller(view, model){
      * 
      */
     function authentified(_login){
+    	_socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
     	_socket.emit("authentification", {login : _login}, function(result){
     		// If the account is not online already
     		if(!result.exist){
     			// Character view
     			$("#log-in").hide();
     			$(".error").hide();
+    			setEventHandlers();
     		}else {
     			// Show the login view again
     			$(".error").show();
@@ -197,11 +199,9 @@ function Controller(view, model){
     	// Wait for login
     	$('#submit').click(onSubmit);
     	
-    	_socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
     	// Set the local player to the spawn
 	    _view.getModel().setLocalPlayer(new Player(_view.getModel().getSpawn(), "Shinochi", 60));
 	    _view.addEntity(_view.getModel().getLocalPlayer());
-	    setEventHandlers();
 	    requestAnimFrame(scope.main);
     };
 }
