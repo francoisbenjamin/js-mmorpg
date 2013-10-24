@@ -12,22 +12,23 @@ var path = require("path"),
 Player = require("./server-classes/player/Player").Player,
 express = require("express"),
 app = express(),
+io = require('socket.io'),
+server,
 util = require("util"),
 http = require('http'),
 connect = require('express/node_modules/connect'),
 cookie = require('express/node_modules/cookie'),
 mongoStore = require('connect-mongo')(express),
 mongoose = require("mongoose"),
+sockets,
 sessionStore,
-port = process.env.PORT || settings.port;
-
-var parseCookie = require('connect').utils.parseSignedCookie;
+port = settings.port;
 var mongooseConnection;
+
 /******************
  ** Game variables
  *****************/
 var players = [];
-var server, io;
 
 /*******************
  ** Databases Schema
@@ -52,7 +53,8 @@ function onAuthAccount(client, callback) {
 	util.log("An attempt of connection of the account : " + client.login);
 	callback({ exist: true });
 }
-
+//Active sockets by session
+var connections = {};
 function onSocketConnection(client){
 	// Listen for client authentification
 	client.on("authentification", onAuthAccount);
@@ -204,10 +206,6 @@ function init(){
 	// The player model for the data
 	playerModel = mongoose.model('players', playerSchema);
 	
-	// Close mongoDB connection
-	mongoose.connection.close();
-	
-	
 	// Create a line
 //	var newplayer = new playerModel({ name : 'Shinochi'});
 //	newplayer.level = 10;
@@ -226,42 +224,43 @@ function init(){
 //	});
 	
 	/* END WIP */
-	io = require('socket.io');
-	server =  http.createServer(app);
-	io = io.listen(server, {"log level": 2});
-	sessionStore = new mongoStore({mongoose_connection: mongooseConnection.connections[0],auto_reconnect: true},function(){console.log("connected");});
+	sessionStore = new mongoStore({url: 'mongodb://localhost:27017/js-mmorpg'},function(){
+		util.log("Connected to the database");
+	});
 	
 	/***********************
 	 ** Server configuration
 	 ***********************/
-	app.configure(function() {
+	app.configure(function(){
 		app.use(express.bodyParser());
-		app.use(express.cookieParser());
-		app.set('port', port);
-		app.set("transports", ["websocket"]);
-		app.use(app.router);
-		app.use(express.static(path.join(__dirname, '/public')));
-		// Allow parsing cookies from request headers
-		app.set("log level" , 2);
-		
+		app.use(express.cookieParser(settings.secret));
 		// Session Management
 		app.use(express.session({
-			// Private crypting key
-			// You'll need to change it
-			secret : settings.secret,
-			store : sessionStore,
-			key: express.sid,
-			clear_interval: 3600,
+			secret: settings.secret,
+			key: "express.sid",
+			store: sessionStore,
 			cookie: {
-		        maxAge: 600000 // 1 min as example
-		    }
+				httpOnly: true,
+				maxAge: 600000 // 1 min as example
+			}
 		}));
-		app.use(express.methodOverride());
+		app.set("log level" , 2);
+		app.set("port", port);
+		
+		// Check if the client is authentified
+		app.post('/connexion', function(req, res){
+			
+		});
+		
+		app.use(express.static(__dirname + '/public'));
+		app.use(app.router);
 	});
 	
-	app.get('/', function (req, res) {
+	app.get('/', function(req, res) {
+		console.log("heya");
+	    req.session.loginDate = new Date().toString();
 	    res.sendfile(__dirname + '/index.html');
-	});
+	})
 	
 	app.configure('development', function(){
 	  this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
@@ -271,39 +270,38 @@ function init(){
 	  this.use(express.errorHandler());
 	});
 	
-	io.configure('development', function(){
-		  io.set('transports', ['websocket']);
-		});
 	/**
 	 * Authorization
 	 */
-	//SESSION AND COOKIE FOR SOCKET.IO
-	
-	io.set('authorization', function (data, accept) {
-		// check if there's a cookie header
-	    if (data.headers.cookie) {
-	        // if there is, parse the cookie
-	        data.cookie = express.cookieParser(data.headers.cookie, settings.secret);
-	        // note that you will need to use the same key to grad the
-	        // session id, as you specified in the Express setup.
-	        data.sessionID = data.cookie['express.sid'];
-	        console.log(data.sessionID);
-	    } else {
-	       // if there isn't, turn down the connection with a message
-	       // and leave the function.
-	       return accept('No cookie transmitted.', false);
-	    }
-	    // accept the incoming connection
-	    accept(null, true);
-		});
-	server.listen(port, function () {
-		 util.log('############################################');
-	     util.log(' Server started successfully on '+ port + '!');
-	     util.log('############################################');
+	server = http.createServer(app).listen( app.get('port'), function(){
+		util.log('######################################################');
+	    util.log(' JS-MMORPG Server started successfully on '+ app.get('port') + '!');
+	    util.log('######################################################');
 	});
+	io = io.listen(server);
 	
-	
+	io.set('authorization', function (handshakeData, accept) {
+		console.log("cookie : " + handshakeData.headers.cookie);
+		  if (handshakeData.headers.cookie) {
+			  handshakeData.cookie = cookie.parse(handshakeData.headers.cookie);
+
+			    handshakeData.sessionID = connect.utils.parseSignedCookies(handshakeData.cookie['express.sid'], settings.secret);
+			    sessionStore.get(handshakeData.sessionID.sessionID, function(err, session) {
+			        if (err || !session) {
+			          accept(err || "No Session", false);
+			        } else {
+			        	 handshakeData.session = session;
+			          accept(null, true);
+			        }
+			      });
+		  } else {
+		    return accept('No cookie transmitted.', false);
+		  } 
+
+		  accept(null, true);
+	});
 	setEventHandlers();
+	
 }
 
 init();

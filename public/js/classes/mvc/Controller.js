@@ -85,21 +85,30 @@ function Controller(view, model){
      * 
      */
     function authentified(_login){
+    	console.log("trying to connect...");
     	_socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+    	_socket.socket.on('error', function (reason){
+    		  console.error('Unable to connect Socket.IO', reason);
+    		});
+    	setEventHandlers();
     	_socket.emit("authentification", {login : _login}, function(result){
     		// If the account is not online already
     		if(!result.exist){
     			// Character view
     			$("#log-in").hide();
     			$(".error").hide();
+    			$("#characters").show();
     			setEventHandlers();
-    		}else {
+    	    	console.log("Connected...");
+
+    		} else {
     			// Show the login view again
     			$(".error").show();
     			$(".error").html("The account is already online");
+    			$("#characters").hide();
+    			console.log("Connection failed...");
     		}
     	});
-    	console.log("trying to connect...");
     }
     
     var setEventHandlers = function(){
@@ -107,7 +116,6 @@ function Controller(view, model){
     	$(window).resize(onResize);
     	// Socket connection successful
     	_socket.on("connect", onSocketConnected);
-    	
     	// New player message received
     	_socket.on("new player", onNewPlayer);
     	
@@ -166,7 +174,7 @@ function Controller(view, model){
     			type: "POST",
     			async: false,
     			data: { login: $.trim($("#login").val()), password: $.trim($("#password").val())},
-    			url: "inc/connexion.inc.php",
+    			url: "http://localhost:8000/connexion",
     			dataType: "json",
     			success: function(data){
     				if(!data.signIn){
