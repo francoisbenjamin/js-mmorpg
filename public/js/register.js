@@ -23,7 +23,7 @@ function validForm(){
 			type: "POST",
 			async: false,
 			data: { login: $.trim($("#login").val())},
-			url: "inc/getAccount.inc.php",
+			url: "http://localhost:8000/inc/getAccount.inc.php",
 			dataType: "json",
 			success: function(data){
 				if(data.exist){

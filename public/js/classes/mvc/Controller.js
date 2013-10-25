@@ -6,9 +6,11 @@
  */
 function Controller(view, model){
     var _view = this.view = view;
+    var scope = this;
+    var _socket;
     this.model = model;
     this.screenManager = new ScreenManager();
-    var scope = this;
+    
     /******************
      ** Load the assets
      ******************/
@@ -17,10 +19,8 @@ function Controller(view, model){
 	this.loader.onComplete = onAssetsLoaded;
 	this.loader.load();
     
-    var _socket;
     // Add the stage to the page
     document.body.appendChild(view.getRenderer().view);
-    
     
     // Set the spawn coordinates for the player
     _view.getModel().setSpawn(new PIXI.Point(Math.round(Math.random()*(_view.getGameScreenWidth() - 20)), Math.round(Math.random()*(_view.getGameScreenHeight() - 20))));
@@ -29,9 +29,9 @@ function Controller(view, model){
      ** Game event handlers
      **********************/
     
-    /**
+    /******************
      * Socket connected
-     */
+     ******************/
     var onSocketConnected = function() {
     	// Send local player data to the game server
     	console.log(_view.getModel().getSpawn().x);
@@ -39,10 +39,10 @@ function Controller(view, model){
     	console.log("Connected to socket server");
     };
     
-    /**
-     * New player
-     */ 
-   var onNewPlayer = function(data) {
+	/************
+	 * New player
+	 ************/ 
+    var onNewPlayer = function(data) {
     	console.log("New player connected: "+ data.id);
 
     	// Initialise the new player
@@ -69,7 +69,7 @@ function Controller(view, model){
     	_view.getModel().getRemotePlayers().splice(_view.getModel().getRemotePlayers().indexOf(removePlayer), 1);
     };
     
- // Browser window resize
+    //Browser window resize
     function onResize(e) {
     	_view.getRenderer().resize(window.innerWidth,  window.innerHeight);
     };
@@ -86,7 +86,7 @@ function Controller(view, model){
      */
     function authentified(_login){
     	console.log("trying to connect...");
-    	_socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+    	_socket = io.connect("http://"+settings.host, {port: settings.port, transports: ["websocket"]});
     	_socket.socket.on('error', function (reason){
     		  console.error('Unable to connect Socket.IO', reason);
     		});
@@ -220,7 +220,6 @@ function Controller(view, model){
 Controller.prototype.ignoreUser = function(){
 	Mousetrap.pause();
 };
-
 
 /**
  * Unpause Mousetrap

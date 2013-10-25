@@ -2,40 +2,58 @@
  * The server of the game
  * @author Benjamin François
  */
+/**
+ * Settings
+ */
+var settings = require("./settings/settings").settings;
+
+/*******************
+ * Game Requirements
+ ******************/
+Player = require("./server-classes/player/Player").Player;
 
 /***********************
  ** Node.js Requirements
  ***********************/
-var settings = require("./settings/settings").settings;
-
 var path = require("path"),
-Player = require("./server-classes/player/Player").Player,
 express = require("express"),
+
+// Express server
 app = express(),
 io = require('socket.io'),
-server,
 util = require("util"),
 http = require('http'),
 connect = require('express/node_modules/connect'),
 cookie = require('express/node_modules/cookie'),
+
+// MongoDB
+mongoUrl = 'mongodb://'+ settings.host
++':'+ settings.db_port.toString()
++ '/' + settings.db,
 mongoStore = require('connect-mongo')(express),
 mongoose = require("mongoose"),
+mongooseConnection,
+server,
 sockets,
-sessionStore,
-port = settings.port;
-var mongooseConnection;
+sessionStore;
 
 /******************
  ** Game variables
  *****************/
 var players = [];
 
-/*******************
- ** Databases Schema
+/********************
+ ** Databases Schemas
  *******************/
-var accountSchema;
+var PLAYER_SCHEMA = require("./settings/schemas/schemas").PLAYER_SCHEMA;
+var ACCOUNT_SCHEMA = require("./settings/schemas/schemas").ACCOUNT_SCHEMA;
+var AccountSchema;
+var PlayerSchema;
+
+/*******************
+ ** Databases Models
+ *******************/
 var accountModel;
-var playerSchema;
 var playerModel;
 
 /**********************
@@ -54,11 +72,9 @@ function onAuthAccount(client, callback) {
 	callback({ exist: true });
 }
 //Active sockets by session
-var connections = {};
 function onSocketConnection(client){
 	// Listen for client authentification
 	client.on("authentification", onAuthAccount);
-	client.on("auth", onAuthAccount);
 	
 	// Listen for client disconnected
 	client.on("disconnect", onClientDisconnect);
@@ -149,41 +165,28 @@ function playerById(id) {
 	return false;
 };
 
-/**********************
- ** Game initialization
- **********************/
+/************************
+ ** Server initialization
+ ************************/
 function init(){
+
 	/*************************
 	 ** Database configuration
 	 *************************/
-	// TODO Add an user for the database
-	mongooseConnection = mongoose.connect("mongodb://localhost/js-mmorpg", function(err){
+	mongooseConnection = mongoose.connect(mongoUrl, function(err){
 		if(err){ throw err;}
+		else {
+			
+		}
 	});
 	
 	// The data for the player in the database
-	playerSchema = new mongoose.Schema({
-		name : {type : String, unique: true , dropDups: true},
-		level : {type : Number, default : 1, min : 1, max: 99},
-		spawn_x : {type : Number, default : 100},
-		spawn_y : {type : Number, default : 100},
-		hp : Number,
-		x : {type : Number, default : 100},
-		y : {type : Number, default : 100},
-		exp : {type : Number, default : 0, min: 0},
-		
-		});
+	PlayerSchema = new mongoose.Schema(PLAYER_SCHEMA);
 	
-	accountSchema = new mongoose.Schema({
-		login : {type: String, unique: true, dropDups: true},
-		password : {type: String},
-		email: {type: String, match: /^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$/},
-		players : [playerSchema],
-		last_log : {type: Date}
-	});
+	AccountSchema = new mongoose.Schema(ACCOUNT_SCHEMA);
 
 	// The account model
-	accountModel = mongoose.model('accounts', accountSchema);
+	accountModel = mongoose.model('accounts', AccountSchema);
 	accountModel.findOne({login: 'admin'}, function (err, user) {
 		  if (err) {
 		     console.log(err.name);
@@ -197,14 +200,15 @@ function init(){
 			newAccount.last_log =  Date.now();
 			newAccount.save(function (err) {
 				  if (err) { throw err; }
-				  util.log('Account added !');
+				  util.log('Administrator account added !');
 				});
 			
 		  }
 		  return;
-		});
+	});
+	
 	// The player model for the data
-	playerModel = mongoose.model('players', playerSchema);
+	playerModel = mongoose.model('players', PlayerSchema);
 	
 	// Create a line
 //	var newplayer = new playerModel({ name : 'Shinochi'});
@@ -224,7 +228,9 @@ function init(){
 //	});
 	
 	/* END WIP */
-	sessionStore = new mongoStore({url: 'mongodb://localhost:27017/js-mmorpg'},function(){
+	
+	// Store sessions in the database
+	sessionStore = new mongoStore({url: mongoUrl},function(){
 		util.log("Connected to the database");
 	});
 	
@@ -234,61 +240,85 @@ function init(){
 	app.configure(function(){
 		app.use(express.bodyParser());
 		app.use(express.cookieParser(settings.secret));
+		
 		// Session Management
 		app.use(express.session({
-			secret: settings.secret,
+			secret: settings.secret, // Our secret used in order to decode the session
 			key: "express.sid",
 			store: sessionStore,
 			cookie: {
 				httpOnly: true,
-				maxAge: 600000 // 1 min as example
+				maxAge: 600000 // TTL of the cookie
 			}
 		}));
+		
 		app.set("log level" , 2);
-		app.set("port", port);
+		app.set("port", settings.port);
+		// Client directory
+		app.use(express.static(__dirname + '/public'));
+		app.use(app.router);
+		// Client page
+		app.get('/', function(req, res) {
+				res.sendfile(__dirname + '/index.html');
+		})
+		// Registration page
+		.get('/register', function(req, res) {
+				res.sendfile(__dirname + '/public/register.html');
+		});
+		// Add a new account to the database
+		app.post('/addaccount', function(req, res){
+			util.log("New account created : " + req.body.login);
+		});
 		
 		// Check if the client is authentified
 		app.post('/connexion', function(req, res){
+			console.log("Checking authentification for : " + req.body.login);
+			// Check if the account exist
+			var query = accountModel.find(null);
+			query.where('login').equals(req.body.login);
+			query.where('password').equals(req.body.password);
+
+			query.exec(function (err, accounts) {
+				if (err) {
+					res.send({signIn: false});
+					throw err; 
+				}
+			res.send({signIn: true});
+			});
 			
 		});
 		
-		app.use(express.static(__dirname + '/public'));
-		app.use(app.router);
 	});
 	
-	app.get('/', function(req, res) {
-		console.log("heya");
-	    req.session.loginDate = new Date().toString();
-	    res.sendfile(__dirname + '/index.html');
-	})
+	
 	
 	app.configure('development', function(){
-	  this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+		this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 	});
 	
 	app.configure('production', function(){
 	  this.use(express.errorHandler());
 	});
 	
-	/**
+	/***************
 	 * Authorization
-	 */
-	server = http.createServer(app).listen( app.get('port'), function(){
+	 ***************/
+	server = http.createServer(app).listen(app.get('port'), function(){
 		util.log('######################################################');
 	    util.log(' JS-MMORPG Server started successfully on '+ app.get('port') + '!');
 	    util.log('######################################################');
 	});
-	io = io.listen(server);
 	
+	io = io.listen(server);
+	io.set("log level", 2);
 	io.set('authorization', function (handshakeData, accept) {
-		console.log("cookie : " + handshakeData.headers.cookie);
 		  if (handshakeData.headers.cookie) {
 			  handshakeData.cookie = cookie.parse(handshakeData.headers.cookie);
 
-			    handshakeData.sessionID = connect.utils.parseSignedCookies(handshakeData.cookie['express.sid'], settings.secret);
-			    sessionStore.get(handshakeData.sessionID.sessionID, function(err, session) {
+			    handshakeData.sessionID = connect.utils.parseSignedCookies(handshakeData.cookie, settings.secret);
+			    sessionStore.get(handshakeData.sessionID, function(err, session) {
 			        if (err || !session) {
-			          accept(err || "No Session", false);
+			          accept(err || "No Session founded", false);
 			        } else {
 			        	 handshakeData.session = session;
 			          accept(null, true);
@@ -301,7 +331,6 @@ function init(){
 		  accept(null, true);
 	});
 	setEventHandlers();
-	
 }
 
 init();

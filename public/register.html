@@ -2,7 +2,7 @@
 <html>
     <head>
         <!-- CSS -->
-		<link rel="stylesheet" type="text/css" href="./css/main.css" />
+		<link rel="stylesheet" type="text/css" href="./css/register.css" />
 		<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css" />
         <!-- Node -->
        	<script src="http://localhost:8000/socket.io/socket.io.js"></script>
@@ -14,13 +14,13 @@
         <meta charset="utf-8"/>
         <meta name="description" content="MMORPG Javascript"/>
         <meta name="author" content="Benjamin 'Shinochi' FRANÇOIS"/>
-        <title>Register Page</title>
+        <title>Registration Page</title>
     </head>
     <body>
+    	<div id="form">
     		<h1>Registration Page</h1>
-    	<div>
     		<div id="error" style="display:none; margin : 0 auto; width: 300px; text-align: center;" class="alert alert-error alert-block"></div>
-    		<form id="registration" name="registration" method="POST" action="addAccount.php">
+    		<form id="registration" name="registration" method="POST" action="http://localhost:8000/addaccount">
     			<label>Login : </label>
     			<input id="login" name="login" type="text" placeholder="Login" autofocus required/>
     			
