@@ -41,7 +41,7 @@ sessionStore;
  ** Game variables
  *****************/
 var players = [];
-
+var sessionIDs = new Array();
 /********************
  ** Databases Schemas
  *******************/
@@ -65,45 +65,65 @@ function setEventHandlers(){
 
 /**
  * Check if the user is not already logged in
- * @returns boolean
+ * @returns {Array}
  */
 function onAuthAccount(client, callback) {
 	util.log("An attempt of connection of the account : " + client.login);
-	callback({ exist: true });
+	var query = accountModel.find(null);
+	query.where('login', client.login);
+	query.exec(function (err, accounts) {
+		if (err) {
+			callback({characters: null});
+			throw err;
+		}
+	//Return the client's characters' list
+		callback({characters: accounts[0].players});
+	});
 }
-//Active sockets by session
+
 function onSocketConnection(client){
+	var sessionID = client.handshake.sessionID; // Store session ID from handshake
+	  // this is required if we want to access this data when user leaves, as handshake is
+	  // not available in "disconnect" event.
 	// Listen for client authentification
-	client.on("authentification", onAuthAccount);
+ if(sessionIDs.indexOf(client.handshake.login) > -1) {
+	  util.log("Session already in use " + connect.utils.parseSignedCookie(client.handshake.login,settings.secret));
+	  io.sockets.socket(client.id).emit('preventLogin', true);
+ }
+ else {
+	  sessionIDs.push(client.handshake.login);
+ }
+	client.on("authentication", onAuthAccount);
 	
 	// Listen for client disconnected
-	client.on("disconnect", onClientDisconnect);
+	client.on("disconnect", function(){
+		 // Is this socket associated to user session ?
+		var ind = sessionIDs.indexOf(sessionID);
+		sessionIDs.splice(ind, 1);
+		
+		var removePlayer = playerById(this.id);
+		
+		// Player not found
+		if (!removePlayer) {
+			util.log("Player not found: " + this.id);
+			return;
+		}
+		else {
+			util.log("'" + removePlayer.getName() + "' has disconnected : " + this.id);
+		}
+
+		// Remove player from players array
+		players.splice(players.indexOf(removePlayer), 1);
+
+		// Broadcast removed player to connected socket clients
+		this.broadcast.emit("remove player", {id: this.id});
+	});
 	
 	// Listen for move player message
 	client.on("move player", onMovePlayer);
 	
 	// Listen for new player message
 	client.on("new player", onNewPlayer);
-}
-
-// Socket client has disconnected
-function onClientDisconnect(){
-	var removePlayer = playerById(this.id);
-	
-	// Player not found
-	if (!removePlayer) {
-		util.log("Player not found: " + this.id);
-		return;
-	}
-	else {
-		util.log("'" + removePlayer.getName() + "' has disconnected : " + this.id);
-	}
-
-	// Remove player from players array
-	players.splice(players.indexOf(removePlayer), 1);
-
-	// Broadcast removed player to connected socket clients
-	this.broadcast.emit("remove player", {id: this.id});
 }
 
 //Player has moved
@@ -182,7 +202,6 @@ function init(){
 	
 	// The data for the player in the database
 	PlayerSchema = new mongoose.Schema(PLAYER_SCHEMA);
-	
 	AccountSchema = new mongoose.Schema(ACCOUNT_SCHEMA);
 
 	// The account model
@@ -254,17 +273,44 @@ function init(){
 		
 		app.set("log level" , 2);
 		app.set("port", settings.port);
+		
 		// Client directory
 		app.use(express.static(__dirname + '/public'));
 		app.use(app.router);
 		// Client page
 		app.get('/', function(req, res) {
-				res.sendfile(__dirname + '/index.html');
+			res.sendfile(__dirname + '/index.html');
 		})
 		// Registration page
 		.get('/register', function(req, res) {
-				res.sendfile(__dirname + '/public/register.html');
+			res.sendfile(__dirname + '/public/register.html');
+		})
+		// Administrator page
+		.get('/admin', function(req, res) {
+			res.sendfile(__dirname + '/public/admin.html');
 		});
+		
+		// Add a new account to the database
+		app.post('/createcharacter', function(req, res){
+			var query = accountModel.find(null);
+			query.where('players.name',req.body.characterName);
+			query.exec(function (err, player) {
+				if (err) {
+					throw err;
+				}
+				if(!player[0]){
+					console.log("no character");
+					res.send({done: true});
+				}
+				else {
+					console.log(player[0].name);
+					res.send({done: false});
+				}
+			//Return the client's characters' list
+			});
+			util.log(req.body.login + " create a new character : " + req.body.characterName);
+		});
+		
 		// Add a new account to the database
 		app.post('/addaccount', function(req, res){
 			util.log("New account created : " + req.body.login);
@@ -272,7 +318,7 @@ function init(){
 		
 		// Check if the client is authentified
 		app.post('/connexion', function(req, res){
-			console.log("Checking authentification for : " + req.body.login);
+			util.log("Checking authentification for : " + req.body.login);
 			// Check if the account exist
 			var query = accountModel.find(null);
 			query.where('login').equals(req.body.login);
@@ -280,17 +326,16 @@ function init(){
 
 			query.exec(function (err, accounts) {
 				if (err) {
-					res.send({signIn: false});
+					res.send({valid: false});
 					throw err; 
 				}
-			res.send({signIn: true});
+				res.cookie("login", req.body.login, {signed: true});
+				res.send({valid: true});
 			});
 			
 		});
 		
 	});
-	
-	
 	
 	app.configure('development', function(){
 		this.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
@@ -311,25 +356,34 @@ function init(){
 	
 	io = io.listen(server);
 	io.set("log level", 2);
-	io.set('authorization', function (handshakeData, accept) {
-		  if (handshakeData.headers.cookie) {
-			  handshakeData.cookie = cookie.parse(handshakeData.headers.cookie);
-
-			    handshakeData.sessionID = connect.utils.parseSignedCookies(handshakeData.cookie, settings.secret);
-			    sessionStore.get(handshakeData.sessionID, function(err, session) {
-			        if (err || !session) {
-			          accept(err || "No Session founded", false);
-			        } else {
-			        	 handshakeData.session = session;
-			          accept(null, true);
-			        }
-			      });
+	io.set('authorization', function (handshakeData, callback) {
+		  // Read cookies from handshake headers
+		  var cookies = cookie.parse(handshakeData.headers.cookie);
+		  // We're now able to retrieve session ID
+		  var sessionID;
+		  if (cookies['express.sid']) {
+		    sessionID = connect.utils.parseSignedCookie(cookies['express.sid'], settings.secret);
+		  }
+		  // No session? Refuse connection
+		  if (!sessionID) {
+		    callback('No session', false);
 		  } else {
-		    return accept('No cookie transmitted.', false);
-		  } 
-
-		  accept(null, true);
-	});
+		    // Store session ID in handshake data, we'll use it later to associate
+		    // session with open sockets
+		    // On récupère la session utilisateur, et on en extrait son username
+		    sessionStore.get(sessionID, function (err, session) {
+		      if (!err && session && cookies.login) {
+		        // On stocke ce username dans les données de l'authentification, pour réutilisation directe plus tard
+		        handshakeData.login = cookies.login;
+		        // OK, on accepte la connexion
+		        callback(null, true);
+		      } else {
+		        // Session incomplète, ou non trouvée
+		        callback(err || 'User not authenticated', false);
+		      }
+		    });
+		  }
+		});
 	setEventHandlers();
 }
 

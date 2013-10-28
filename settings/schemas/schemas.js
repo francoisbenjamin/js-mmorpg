@@ -29,7 +29,7 @@ exports.PLAYER_SCHEMA = PLAYER_SCHEMA;
 var ACCOUNT_SCHEMA = {
 		login : {type: String, unique: true, dropDups: true},
 		password : {type: String},
-		email: {type: String, match: /^[a-z|0-9|A-Z]*([_][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*([.][a-z|0-9|A-Z]+)*(([_][a-z|0-9|A-Z]+)*)?@[a-z][a-z|0-9|A-Z]*\.([a-z][a-z|0-9|A-Z]*(\.[a-z][a-z|0-9|A-Z]*)?)$/},
+		email: {type: String},
 		players : [PLAYER_SCHEMA],
 		last_log : {type: Date}
 };

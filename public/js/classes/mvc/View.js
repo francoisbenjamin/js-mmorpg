@@ -7,7 +7,7 @@
  function View(model, backgroundColor, interactive){
     PIXI.Stage.call(this, backgroundColor, interactive);
     this.model = model;
-    this.hud;
+    this.hud = new Hud(new LoginHud());
     this.gameScreenWidth = $(document).width();
     this.gameScreenHeight = $(document).height();
     this.renderer = PIXI.autoDetectRenderer(this.gameScreenWidth, this.gameScreenHeight, null);
@@ -48,6 +48,14 @@
   */
  View.prototype.getRenderer = function(){
 	return this.renderer; 
+ };
+ 
+ /**
+  * Return the game's Hud
+  * @returns {Hud}
+  */
+ View.prototype.getHud = function(){
+	 return this.hud;
  };
 
 // SETTERS

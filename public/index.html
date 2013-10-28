@@ -7,9 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="./css/main.css" />
 		<!-- Settings for the client -->
 		<script src="js/settings.js"></script>
-        <!--[if lt IE 9]>
-            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+
         <!-- Node -->
        	<script src="http://localhost:8000/socket.io/socket.io.js"></script>
         <!-- JQuery -->
@@ -20,6 +18,9 @@
         <script src="libs/pixi.js"></script>
         <!-- Graphics -->
         <script src="js/classes/animation/AdvancedMovieClip.js"></script>
+        <!-- Hud -->
+        <script src="js/classes/hud/LoginHud.js"></script>
+        <script src="js/classes/hud/Hud.js"></script>
         <!-- Player -->
         <script src="js/classes/player/Player.js"></script>
         <!-- ScreenManager -->
@@ -31,6 +32,9 @@
         <script src="./js/classes/mvc/Controller.js"></script>
         <!-- Main -->
         <script src="./js/main.js"></script>
+        <!--[if IE]>
+		 <script>$('html').attr("log", "on");</script>
+		<![endif]-->
         <meta charset="utf-8">
         <meta name="description" content="MMORPG Javascript">
         <meta name="author" content="Benjamin 'Shinochi' FRANÇOIS">
@@ -48,8 +52,17 @@
     <div id="characters" class="hud-background">
     	<select id="characters_list" name="characters_list">
     	</select>
-    	<input type="button" id ="newCharacter" class="button btn-small" value="New Character"/>
-    	<input type="button" id ="useCharacter" class="button btn-small" value="Use this Character"/>
+    	<input type="button" id ="newCharacter" class="button btn-small" value="New"/>
+    	<input type="button" id ="useCharacter" class="button btn-small" value="Select"/>
+    	<input type="button" id ="deleteCharacter" class="button btn-small" value="Delete"/>
+    	<input type="button" id ="logout" class="button btn-small" value="Log Out" onClick="javascript:location.reload();"/>
+    	<br/>
+    	<br/>
+    	<div id="characterCreation">
+	    	<input id="characterName" name ="characterName" maxlength="32" class="textbox" type="text" autocomplete="off"/><br/>
+	    	<input type="button" id ="create" class="button btn-small" value="Create"/>
+    	</div>
     </div>
+    
     </body>
 </html>

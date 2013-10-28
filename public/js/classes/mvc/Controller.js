@@ -34,7 +34,6 @@ function Controller(view, model){
      ******************/
     var onSocketConnected = function() {
     	// Send local player data to the game server
-    	console.log(_view.getModel().getSpawn().x);
     	_socket.emit("new player", {x: _view.getModel().getSpawn().x, y: _view.getModel().getSpawn().y, name: _view.getModel().getLocalPlayer().getName()});
     	console.log("Connected to socket server");
     };
@@ -82,40 +81,79 @@ function Controller(view, model){
     };
     
     /**
+     * When the client is already log in
+     */
+    var onPreventLogin = function(){
+    	$(".error").show();
+		$(".error").html("This account is already connected.");
+		_socket.disconnect();
+    };
+    
+   /**
+    * Check if the character can be create
+    */
+    var createNewCharacter = function(){
+    	$.ajax({
+			type: "POST",
+			async: false,
+			data: { login: $.trim($("#login").val()),characterName: $.trim($("#characterName").val())},
+			url: "http://localhost:8000/createcharacter",
+			dataType: "json",
+			success: function(data){
+				if(!data.done){
+					$(".error").show();
+					$(".error").html("The character already exist");
+				}
+				else {
+					//Load the character
+				}
+			}
+		});
+    };
+    
+    /**
+     * Show the new character's form 
+     */
+    var showNewCharacterForm = function(){
+    	_view.getHud().getLoginHud().getCharacterCreation().show();
+    };
+    
+    /**
      * 
      */
     function authentified(_login){
     	console.log("trying to connect...");
     	_socket = io.connect("http://"+settings.host, {port: settings.port, transports: ["websocket"]});
     	_socket.socket.on('error', function (reason){
-    		  console.error('Unable to connect Socket.IO', reason);
-    		});
+    		console.error('Unable to connect Socket.IO', reason);
+    		_socket.disconnect();
+    	});
     	setEventHandlers();
-    	_socket.emit("authentification", {login : _login}, function(result){
-    		// If the account is not online already
-    		if(!result.exist){
-    			// Character view
-    			$("#log-in").hide();
-    			$(".error").hide();
-    			$("#characters").show();
-    			setEventHandlers();
-    	    	console.log("Connected...");
-
-    		} else {
-    			// Show the login view again
-    			$(".error").show();
-    			$(".error").html("The account is already online");
-    			$("#characters").hide();
-    			console.log("Connection failed...");
-    		}
+    	
+    	_socket.emit("authentication", {login : _login}, function(result){
+    		// If the account is not online yet
+			_view.getHud().getLoginHud().hideLogin();
+			$(".error").hide();
+			// Show the Character view
+			_view.getHud().getLoginHud().showCharacters();
+			
+			if(result.characters.length <= 0){
+				_view.getHud().getLoginHud().charactersList().hide();
+			}
+			// Create a new character
+			_view.getHud().getLoginHud().getNewButton().click(showNewCharacterForm);
+			_view.getHud().getLoginHud().getCreateButton().click(createNewCharacter);
+			setEventHandlers();
+	    	console.log("Connected...");
     	});
     }
+    
     
     var setEventHandlers = function(){
     	// Window resize
     	$(window).resize(onResize);
     	// Socket connection successful
-    	_socket.on("connect", onSocketConnected);
+//    	_socket.on("connect", onSocketConnected);
     	// New player message received
     	_socket.on("new player", onNewPlayer);
     	
@@ -124,6 +162,9 @@ function Controller(view, model){
     	
     	// Player removed message received
     	_socket.on("remove player", onRemovePlayer);
+    	
+    	// Prevent the client to connect 
+    	_socket.on("preventLogin", onPreventLogin);
     };
     
     /***********************
@@ -177,7 +218,7 @@ function Controller(view, model){
     			url: "http://localhost:8000/connexion",
     			dataType: "json",
     			success: function(data){
-    				if(!data.signIn){
+    				if(!data.valid){
     					$(".error").show();
     					$(".error").html("The login or the password is not valid.");
     					valid = false;
@@ -193,8 +234,6 @@ function Controller(view, model){
     		$(".error").show();
 			$(".error").html(error_msg);
     	}
-    	
-    	
     }
     
     /**
@@ -202,14 +241,14 @@ function Controller(view, model){
      */
     function onAssetsLoaded(){
     	// Display the login hud
-    	$('#log-in').show();
+    	_view.getHud().getLoginHud().showLogin();
     	$('#log-in').css('display','block');
     	// Wait for login
     	$('#submit').click(onSubmit);
     	
     	// Set the local player to the spawn
-	    _view.getModel().setLocalPlayer(new Player(_view.getModel().getSpawn(), "Shinochi", 60));
-	    _view.addEntity(_view.getModel().getLocalPlayer());
+//	    _view.getModel().setLocalPlayer(new Player(_view.getModel().getSpawn(), "Shinochi", 60));
+//	    _view.addEntity(_view.getModel().getLocalPlayer());
 	    requestAnimFrame(scope.main);
     };
 }

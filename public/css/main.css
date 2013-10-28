@@ -1,5 +1,5 @@
 /* Main Style */
-html, body {
+html,body {
 	text-align: center;
 	margin: 0;
 	padding: 0;
@@ -15,7 +15,6 @@ html {
 	color: white;
 }
 
-
 /* HUD */
 #log-in {
 	padding: 10px;
@@ -26,11 +25,29 @@ html {
 	margin: 0 auto;
 }
 
-#characters{
-	display:none;
+#characters {
+	padding: 10px;
+	bottom: 200px;
+	left: 20%;
+	right: 20%;
+	position: absolute;
+	margin: 0 auto;
+	display: none;
 }
 
-.error{
+#deleteCharacter {
+	display: none;
+}
+
+#useCharacter {
+	display: none;
+}
+
+#characterCreation {
+	display: none;
+}
+
+.error {
 	font-family: 'Minecraftia', sans-serif;
 	color: red;
 }

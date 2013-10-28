@@ -1,0 +1,30 @@
+/* Main Style */
+html, body {
+	text-align: center;
+	margin: 0;
+	padding: 0;
+	background-color: #2F7ABC;
+}
+
+body{
+	background-color: #2F7ABC !important;
+}
+
+html {
+	color: black;
+}
+
+h1{
+	margin-top: 20px;
+}
+
+#admin{
+	margin:  0 auto;
+	margin-top: -10px;	
+	width:600px;
+	background-color: white;
+}
+
+form{
+	padding: 15px;
+}
