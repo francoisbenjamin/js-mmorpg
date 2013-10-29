@@ -45,10 +45,8 @@ var sessionIDs = new Array();
 /********************
  ** Databases Schemas
  *******************/
-var PLAYER_SCHEMA = require("./settings/schemas/schemas").PLAYER_SCHEMA;
-var ACCOUNT_SCHEMA = require("./settings/schemas/schemas").ACCOUNT_SCHEMA;
-var AccountSchema;
-var PlayerSchema;
+var AccountSchema = require("./settings/schemas/schemas").AccountSchema;
+var PlayerSchema = require("./settings/schemas/schemas").PlayerSchema;
 
 /*******************
  ** Databases Models
@@ -77,7 +75,7 @@ function onAuthAccount(client, callback) {
 			throw err;
 		}
 	//Return the client's characters' list
-		callback({characters: accounts[0].players});
+		callback({characters: null});
 	});
 }
 
@@ -200,10 +198,6 @@ function init(){
 		}
 	});
 	
-	// The data for the player in the database
-	PlayerSchema = new mongoose.Schema(PLAYER_SCHEMA);
-	AccountSchema = new mongoose.Schema(ACCOUNT_SCHEMA);
-
 	// The account model
 	accountModel = mongoose.model('accounts', AccountSchema);
 	accountModel.findOne({login: 'admin'}, function (err, user) {
@@ -293,19 +287,79 @@ function init(){
 		// Add a new account to the database
 		app.post('/createcharacter', function(req, res){
 			var query = accountModel.find(null);
-			query.where('players.name',req.body.characterName);
+			query.where('characters.name', req.body.characterName.toLowerCase());
 			query.exec(function (err, player) {
 				if (err) {
 					throw err;
 				}
 				if(!player[0]){
 					console.log("no character");
-					res.send({done: true});
+					var newCharacter = {
+							name:  req.body.characterName.toLowerCase(),
+							level: 1,
+							spawn_x : 50,
+							spawn_y : 40,
+							x : 50,
+							y : 40,
+							exp : 0
+					};
+					accountModel.update({ login : req.body.login.toLowerCase()}, { characters : newCharacter }, { multi : true }, function (err) {
+						  if (err) { throw err; }
+						  console.log(req.body.login.toLowerCase() + ' added a new  character : ' + req.body.characterName.toLowerCase());
+						  res.send({done: true});
+					});
+//					var newplayer = new playerModel({ name : req.body.characterName.toLowerCase()});
+//					newplayer.level = 1;
+//					newplayer.spawn_x = 50;
+//					newplayer.spawn_y = 40;
+//					newplayer.x = 50;
+//					newplayer.y = 40;
+//					newplayer.exp = 0;
+
+					// Insert into the database
+//					newplayer.save(function (err) {
+//					  if (err) { throw err; }
+//					  console.log('New player created !');
+//					  
+					  //Insert into the relation table
+					  
+//					});
 				}
 				else {
 					console.log(player[0].name);
 					res.send({done: false});
 				}
+			
+//			var query = playerModel.find(null);
+//			query.where('name',req.body.characterName.toLowerCase());
+//			query.exec(function (err, player) {
+//				if (err) {
+//					throw err;
+//				}
+//				if(!player[0]){
+//					console.log("no character");
+//					res.send({done: true});
+//					var newplayer = new playerModel({ name : req.body.characterName.toLowerCase()});
+//					newplayer.level = 1;
+//					newplayer.spawn_x = 50;
+//					newplayer.spawn_y = 40;
+//					newplayer.x = 50;
+//					newplayer.y = 40;
+//					newplayer.exp = 0;
+//
+//					// Insert into the database
+//					newplayer.save(function (err) {
+//					  if (err) { throw err; }
+//					  console.log('New player created !');
+//					  
+//					  //Insert into the relation table
+//					  
+//					});
+//				}
+//				else {
+//					console.log(player[0].name);
+//					res.send({done: false});
+//				}
 			//Return the client's characters' list
 			});
 			util.log(req.body.login + " create a new character : " + req.body.characterName);

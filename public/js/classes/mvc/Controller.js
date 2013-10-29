@@ -137,7 +137,7 @@ function Controller(view, model){
 			// Show the Character view
 			_view.getHud().getLoginHud().showCharacters();
 			
-			if(result.characters.length <= 0){
+			if(result.characters == null){
 				_view.getHud().getLoginHud().charactersList().hide();
 			}
 			// Create a new character

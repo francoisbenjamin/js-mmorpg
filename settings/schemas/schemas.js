@@ -2,7 +2,7 @@
  * Database schemas
  * @author Benjamin François
  */
-
+var mongoose = require("mongoose");
 /**
  * Player's Schema
  */
@@ -20,7 +20,8 @@ var PLAYER_SCHEMA = {
 	respawn_time : {type: Number, default: 0, min: 0}
 };
 
-exports.PLAYER_SCHEMA = PLAYER_SCHEMA;
+var PlayerSchema = new mongoose.Schema(PLAYER_SCHEMA);
+exports.PlayerSchema = PlayerSchema;
 
 /**
  * Account's Schema
@@ -30,8 +31,10 @@ var ACCOUNT_SCHEMA = {
 		login : {type: String, unique: true, dropDups: true},
 		password : {type: String},
 		email: {type: String},
-		players : [PLAYER_SCHEMA],
+		characters: [PlayerSchema],
 		last_log : {type: Date}
 };
 
-exports.ACCOUNT_SCHEMA = ACCOUNT_SCHEMA;
+var AccountSchema = new mongoose.Schema(ACCOUNT_SCHEMA);
+
+exports.AccountSchema = AccountSchema;
