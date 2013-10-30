@@ -136,15 +136,25 @@ function Controller(view, model){
 			$(".error").hide();
 			// Show the Character view
 			_view.getHud().getLoginHud().showCharacters();
+			$("#characters_list").html(' ');
 			
 			if(result.characters == null){
 				_view.getHud().getLoginHud().charactersList().hide();
+			}
+			else {
+				console.log("Characters...");
+
+				_view.getHud().getLoginHud().charactersList().show();
+				var max = result.characters.length;
+				for (var i = 0; i < max; i++) {
+					$("#characters_list").append("<option>"+result.characters[i].name + "</option>");
+				}
 			}
 			// Create a new character
 			_view.getHud().getLoginHud().getNewButton().click(showNewCharacterForm);
 			_view.getHud().getLoginHud().getCreateButton().click(createNewCharacter);
 			setEventHandlers();
-	    	console.log("Connected...");
+			console.log("Connected...");
     	});
     }
     

@@ -66,16 +66,16 @@ function setEventHandlers(){
  * @returns {Array}
  */
 function onAuthAccount(client, callback) {
-	util.log("An attempt of connection of the account : " + client.login);
+	util.log("An attempt of connection of the account : " + client.login.toLowerCase());
 	var query = accountModel.find(null);
-	query.where('login', client.login);
-	query.exec(function (err, accounts) {
+	query.where('login', client.login.toLowerCase());
+	query.exec(function (err, account) {
 		if (err) {
 			callback({characters: null});
 			throw err;
 		}
-	//Return the client's characters' list
-		callback({characters: null});
+		//Return the client's characters' list
+		callback({characters: account[0].characters});
 	});
 }
 
@@ -193,9 +193,6 @@ function init(){
 	 *************************/
 	mongooseConnection = mongoose.connect(mongoUrl, function(err){
 		if(err){ throw err;}
-		else {
-			
-		}
 	});
 	
 	// The account model
@@ -222,25 +219,6 @@ function init(){
 	
 	// The player model for the data
 	playerModel = mongoose.model('players', PlayerSchema);
-	
-	// Create a line
-//	var newplayer = new playerModel({ name : 'Shinochi'});
-//	newplayer.level = 10;
-//	newplayer.spawn_x = 50;
-//	newplayer.spawn_y = 40;
-//	newplayer.x = 50;
-//	newplayer.y = 90;
-//	newplayer.exp = 100;
-
-	// Insert into the database
-//	newplayer.save(function (err) {
-//	  if (err) { throw err; }
-//	  console.log('Player added !');
-//	  // Close mongoDB connection
-//	  mongoose.connection.close();
-//	});
-	
-	/* END WIP */
 	
 	// Store sessions in the database
 	sessionStore = new mongoStore({url: mongoUrl},function(){
@@ -284,6 +262,10 @@ function init(){
 			res.sendfile(__dirname + '/public/admin.html');
 		});
 		
+		// Administrator page
+		app.post('/success', function(req, res) {
+			res.sendfile(__dirname + '/public/success.html');
+		});
 		// Add a new account to the database
 		app.post('/createcharacter', function(req, res){
 			var query = accountModel.find(null);
@@ -292,8 +274,9 @@ function init(){
 				if (err) {
 					throw err;
 				}
+				// If the character don't exist already
 				if(!player[0]){
-					console.log("no character");
+					// TODO Get the old character array and add the new character
 					var newCharacter = {
 							name:  req.body.characterName.toLowerCase(),
 							level: 1,
@@ -308,66 +291,38 @@ function init(){
 						  console.log(req.body.login.toLowerCase() + ' added a new  character : ' + req.body.characterName.toLowerCase());
 						  res.send({done: true});
 					});
-//					var newplayer = new playerModel({ name : req.body.characterName.toLowerCase()});
-//					newplayer.level = 1;
-//					newplayer.spawn_x = 50;
-//					newplayer.spawn_y = 40;
-//					newplayer.x = 50;
-//					newplayer.y = 40;
-//					newplayer.exp = 0;
-
-					// Insert into the database
-//					newplayer.save(function (err) {
-//					  if (err) { throw err; }
-//					  console.log('New player created !');
-//					  
-					  //Insert into the relation table
-					  
-//					});
 				}
 				else {
-					console.log(player[0].name);
 					res.send({done: false});
 				}
-			
-//			var query = playerModel.find(null);
-//			query.where('name',req.body.characterName.toLowerCase());
-//			query.exec(function (err, player) {
-//				if (err) {
-//					throw err;
-//				}
-//				if(!player[0]){
-//					console.log("no character");
-//					res.send({done: true});
-//					var newplayer = new playerModel({ name : req.body.characterName.toLowerCase()});
-//					newplayer.level = 1;
-//					newplayer.spawn_x = 50;
-//					newplayer.spawn_y = 40;
-//					newplayer.x = 50;
-//					newplayer.y = 40;
-//					newplayer.exp = 0;
-//
-//					// Insert into the database
-//					newplayer.save(function (err) {
-//					  if (err) { throw err; }
-//					  console.log('New player created !');
-//					  
-//					  //Insert into the relation table
-//					  
-//					});
-//				}
-//				else {
-//					console.log(player[0].name);
-//					res.send({done: false});
-//				}
-			//Return the client's characters' list
 			});
-			util.log(req.body.login + " create a new character : " + req.body.characterName);
 		});
 		
-		// Add a new account to the database
-		app.post('/addaccount', function(req, res){
-			util.log("New account created : " + req.body.login);
+		// Check if the account exist
+		app.post('/createaccount', function(req, res){
+			var query = accountModel.find(null);
+			query.where('login', req.body.login.toLowerCase());
+			query.exec(function (err, account) {
+				if (err) {
+					throw err;
+				}
+				// If the character don't exist already
+				if(!account[0]){
+					var newAccount = new accountModel();
+					newAccount.login = req.body.login.toLowerCase();
+					newAccount.password = req.body.password;
+					newAccount.email = req.body.email;
+					newAccount.last_log =  Date.now();
+					newAccount.save(function (err) {
+						  if (err) { throw err; }
+						  util.log('New account created : ' + req.body.login.toLowerCase() + '!');
+						  res.send({done: true});
+					});
+				}
+				else {
+					res.send({done: false});
+				}
+			});
 		});
 		
 		// Check if the client is authentified

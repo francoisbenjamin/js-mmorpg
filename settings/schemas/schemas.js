@@ -7,7 +7,7 @@ var mongoose = require("mongoose");
  * Player's Schema
  */
 var PLAYER_SCHEMA = {
-	name : {type : String, unique: true , dropDups: true},
+	name : {type : String},
 	level : {type: Number, default : 1, min: 1, max: 99},
 	spawn_x : {type: Number, default: 100},
 	spawn_y : {type: Number, default: 100},
@@ -29,7 +29,7 @@ exports.PlayerSchema = PlayerSchema;
 
 var ACCOUNT_SCHEMA = {
 		login : {type: String, unique: true, dropDups: true},
-		password : {type: String},
+		password : {type: String, default: "nopassword"},
 		email: {type: String},
 		characters: [PlayerSchema],
 		last_log : {type: Date}

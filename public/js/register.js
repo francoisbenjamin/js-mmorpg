@@ -22,13 +22,16 @@ function validForm(){
 		$.ajax({
 			type: "POST",
 			async: false,
-			data: { login: $.trim($("#login").val())},
-			url: "http://localhost:8000/inc/getAccount.inc.php",
+			data: { login: $.trim($("#login").val()), password: $.trim($("#password").val()), email :$.trim($("#email").val())},
+			url: "http://localhost:8000/createaccount",
 			dataType: "json",
 			success: function(data){
-				if(data.exist){
+				if(!data.done){
 					error_msg += "The login exist already.<br/>";
 					valid = false;
+				}
+				else {
+					$("#registration").submit();
 				}
 			}
 		});
