@@ -51,19 +51,26 @@
     </div>
     <div id="characters" class="hud-background">
     <div class="error"></div>
-    	<div class="styled-select">
-    		<select id="characters_list" name="characters_list">
-    		</select>
-    	</div>
+    	<fieldset id="list">
+	    	<legend>Character's list : </legend>
+	    	<div class="styled-select">
+	    		<select id="characters_list" name="characters_list" class="select">
+	    		</select>
+	    	</div>
     	<input type="button" id ="newCharacter" class="button btn-small" value="New"/>
     	<input type="button" id ="useCharacter" class="button btn-small" value="Select"/>
     	<input type="button" id ="deleteCharacter" class="button btn-small" value="Delete"/>
+    	</fieldset>
     	<input type="button" id ="logout" class="button btn-small" value="Log Out" onClick="javascript:location.reload();"/>
     	<br/>
     	<br/>
     	<div id="characterCreation">
+    		<h1 class="title">Create your character</h1>
+	    	<label>Character's name</label>
+	    	<br/>
 	    	<input id="characterName" name ="characterName" maxlength="32" class="textbox" type="text" autocomplete="off"/><br/>
-	    	<input type="button" id ="create" class="button btn-small" value="Create"/>
+	    	<br/>
+	    	<input type="button" id ="create" class="button btn-small" value="Create"/><input type="button" id ="cancelCreation" class="button btn-small" value="Cancel"/>
     	</div>
     </div>
     

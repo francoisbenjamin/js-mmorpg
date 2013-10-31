@@ -1,8 +1,10 @@
 function LoginHud(){
+	this.list = $("#list");
 	this.characterList = $("#characters_list");
 	this.characterCreation =  $("#characterCreation");
 	this.newButton = $("#newCharacter");
 	this.createButton = $("#create");
+	this.cancelCreationButton = $("#cancelCreation");
 }
 
 LoginHud.prototype.showLogin = function() {
@@ -21,7 +23,14 @@ LoginHud.prototype.hideCharacters = function() {
 	$("#characters").hide();
 };
 
-LoginHud.prototype.charactersList = function() {
+LoginHud.prototype.getList = function() {
+	return this.list;
+};
+
+/**
+ * Return the character's list
+ */
+LoginHud.prototype.getCharactersList = function() {
 	return this.characterList;
 };
 
@@ -44,4 +53,8 @@ LoginHud.prototype.getCreateButton = function() {
  */
 LoginHud.prototype.getCharacterCreation = function() {
 	return this.characterCreation;
+};
+
+LoginHud.prototype.getCancelCreationButton = function() {
+	return this.cancelCreationButton;
 };

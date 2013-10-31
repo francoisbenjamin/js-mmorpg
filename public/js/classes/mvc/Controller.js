@@ -115,7 +115,15 @@ function Controller(view, model){
      * Show the new character's form 
      */
     var showNewCharacterForm = function(){
+    	_view.getHud().getLoginHud().getList().hide();
     	_view.getHud().getLoginHud().getCharacterCreation().show();
+    };
+    
+    /**
+     * Cancel the character's creation
+     */
+    var cancelCreation = function(){
+    	
     };
     
     /**
@@ -139,12 +147,12 @@ function Controller(view, model){
 			$("#characters_list").html(' ');
 			
 			if(result.characters == null){
-				_view.getHud().getLoginHud().charactersList().hide();
+				_view.getHud().getLoginHud().getCharactersList().hide();
 			}
 			else {
 				console.log("Characters...");
 
-				_view.getHud().getLoginHud().charactersList().show();
+				_view.getHud().getLoginHud().getCharactersList().show();
 				var max = result.characters.length;
 				for (var i = 0; i < max; i++) {
 					$("#characters_list").append("<option>"+result.characters[i].name + "</option>");
@@ -153,6 +161,7 @@ function Controller(view, model){
 			// Create a new character
 			_view.getHud().getLoginHud().getNewButton().click(showNewCharacterForm);
 			_view.getHud().getLoginHud().getCreateButton().click(createNewCharacter);
+			_view.getHud().getLoginHud().getCancelCreationButton().click(cancelCreation);
 			setEventHandlers();
 			console.log("Connected...");
     	});

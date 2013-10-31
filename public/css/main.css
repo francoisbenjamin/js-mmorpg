@@ -10,7 +10,7 @@ html {
 	color: black;
 }
 
-.game_title {
+.title, label {
 	font-family: 'Minecraftia', sans-serif;
 	color: white;
 }
@@ -23,6 +23,16 @@ html {
 	right: 20%;
 	position: absolute;
 	margin: 0 auto;
+}
+
+/* CHARACTER'S CREATION */ 
+fieldset{
+	margin: 0 auto;
+	width: 400px;
+}
+fieldset legend {
+	font-family: 'Minecraftia', sans-serif;
+	color: white;
 }
 
 #characters {
