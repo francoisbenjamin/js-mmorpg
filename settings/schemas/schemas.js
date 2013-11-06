@@ -31,7 +31,7 @@ var ACCOUNT_SCHEMA = {
 		login : {type: String, unique: true, dropDups: true},
 		password : {type: String, default: "nopassword"},
 		email: {type: String},
-		characters: [PlayerSchema],
+		characters: {type: Array},
 		last_log : {type: Date}
 };
 

@@ -7,9 +7,8 @@
 		<link rel="stylesheet" type="text/css" href="./css/main.css" />
 		<!-- Settings for the client -->
 		<script src="js/settings.js"></script>
-
         <!-- Node -->
-       	<script src="http://localhost:8000/socket.io/socket.io.js"></script>
+       	<script src="http://172.22.4.1:8000/socket.io/socket.io.js"></script>
         <!-- JQuery -->
         <script src="libs/jquery.js"></script>
         <!-- Mousetrap -->
@@ -45,8 +44,8 @@
     <div id ="rer" style ="background-color: blue; color: red;"></div>
     <div id ="log-in" class="hud-background">
     	<div class="error"></div>
-	    <input id="login" name ="login" maxlength="32" class="textbox" type="text" autocomplete="off" value="admin"/><br/>
-	    <input id="password" name="password" type="password" maxlength="32" class="textbox" autocomplete="off" value="admin"/><br/>
+	    <input id="login" name ="login" maxlength="32" class="textbox" type="text" autocomplete="off" value=""/><br/>
+	    <input id="password" name="password" type="password" maxlength="32" class="textbox" autocomplete="off" value=""/><br/>
 	    <input type="button" id ="submit" class="button btn-small" value="Sign In"/>
     </div>
     <div id="characters" class="hud-background">
@@ -54,11 +53,11 @@
     	<fieldset id="list">
 	    	<legend>Character's list : </legend>
 	    	<div class="styled-select">
-	    		<select id="characters_list" name="characters_list" class="select">
-	    		</select>
+	    		<ul id="characters_list" class="select" onchange="showValue(this.value)">
+	    		</ul>
+	    		<input type="button" id ="useCharacter" class="button btn-small" value="Select"/>
 	    	</div>
     	<input type="button" id ="newCharacter" class="button btn-small" value="New"/>
-    	<input type="button" id ="useCharacter" class="button btn-small" value="Select"/>
     	<input type="button" id ="deleteCharacter" class="button btn-small" value="Delete"/>
     	</fieldset>
     	<input type="button" id ="logout" class="button btn-small" value="Log Out" onClick="javascript:location.reload();"/>

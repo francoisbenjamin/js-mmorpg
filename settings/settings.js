@@ -6,7 +6,7 @@ var settings = {
 		db : "js-mmorpg",
 		// Default mongo port
 		db_port : 27017,
-		host : "localhost",
+		host : "172.22.4.1",
 		// Private crypting key
 		// You'll need to change it
 		secret : "_js-mm0rpg_1s_4mazing_",

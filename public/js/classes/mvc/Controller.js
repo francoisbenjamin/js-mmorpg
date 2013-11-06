@@ -97,7 +97,7 @@ function Controller(view, model){
 			type: "POST",
 			async: false,
 			data: { login: $.trim($("#login").val()),characterName: $.trim($("#characterName").val())},
-			url: "http://localhost:8000/createcharacter",
+			url: "http://" + settings.host + ":" + settings.port + "/createcharacter",
 			dataType: "json",
 			success: function(data){
 				if(!data.done){
@@ -106,6 +106,9 @@ function Controller(view, model){
 				}
 				else {
 					//Load the character
+					$(".error").hide();
+					$(".error").html("");
+					_view.getHud().getLoginHud().getCharacterCreation().hide();
 				}
 			}
 		});
@@ -116,6 +119,7 @@ function Controller(view, model){
      */
     var showNewCharacterForm = function(){
     	_view.getHud().getLoginHud().getList().hide();
+    	_view.getHud().getLoginHud().getCancelCreationButton().show();
     	_view.getHud().getLoginHud().getCharacterCreation().show();
     };
     
@@ -123,6 +127,11 @@ function Controller(view, model){
      * Cancel the character's creation
      */
     var cancelCreation = function(){
+    	_view.getHud().getLoginHud().getCharacterName().val("");
+    	_view.getHud().getLoginHud().getCharacterCreation().hide();
+    };
+    
+    var playCharacter = function(){
     	
     };
     
@@ -131,7 +140,7 @@ function Controller(view, model){
      */
     function authentified(_login){
     	console.log("trying to connect...");
-    	_socket = io.connect("http://"+settings.host, {port: settings.port, transports: ["websocket"]});
+    	_socket = io.connect("http://" + settings.host, {port: settings.port, transports: ["websocket"]});
     	_socket.socket.on('error', function (reason){
     		console.error('Unable to connect Socket.IO', reason);
     		_socket.disconnect();
@@ -155,13 +164,14 @@ function Controller(view, model){
 				_view.getHud().getLoginHud().getCharactersList().show();
 				var max = result.characters.length;
 				for (var i = 0; i < max; i++) {
-					$("#characters_list").append("<option>"+result.characters[i].name + "</option>");
+					$("#characters_list").append("<a href='#'><li>" + result.characters[i].name + "</li></a>");
 				}
 			}
 			// Create a new character
 			_view.getHud().getLoginHud().getNewButton().click(showNewCharacterForm);
 			_view.getHud().getLoginHud().getCreateButton().click(createNewCharacter);
 			_view.getHud().getLoginHud().getCancelCreationButton().click(cancelCreation);
+			_view.getHud().getLoginHud().getUseButton().click(playCharacter);
 			setEventHandlers();
 			console.log("Connected...");
     	});
@@ -234,7 +244,7 @@ function Controller(view, model){
     			type: "POST",
     			async: false,
     			data: { login: $.trim($("#login").val()), password: $.trim($("#password").val())},
-    			url: "http://localhost:8000/connexion",
+    			url: "http://"+settings.host+ ":" + settings.port+ "/connexion",
     			dataType: "json",
     			success: function(data){
     				if(!data.valid){

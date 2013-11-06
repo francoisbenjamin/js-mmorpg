@@ -1,8 +1,17 @@
+/**
+ * Handle delete, creation or display of the characters
+ * IMPORTANT : the ids must exist in order to works on your html page
+ * You can edit the index.html and this class
+ * 
+ * @author Benjamin François 
+ */
 function LoginHud(){
 	this.list = $("#list");
 	this.characterList = $("#characters_list");
 	this.characterCreation =  $("#characterCreation");
+	this.characterName = $("#characterName");
 	this.newButton = $("#newCharacter");
+	this.useButton = $("#useCharacter");
 	this.createButton = $("#create");
 	this.cancelCreationButton = $("#cancelCreation");
 }
@@ -55,6 +64,20 @@ LoginHud.prototype.getCharacterCreation = function() {
 	return this.characterCreation;
 };
 
+/**
+ * Return the input for the character's name
+ */
+LoginHud.prototype.getCharacterName = function() {
+	return this.characterName;
+};
+
+/**
+ * Return the button that cancel the character's creation
+ */
 LoginHud.prototype.getCancelCreationButton = function() {
 	return this.cancelCreationButton;
+};
+
+LoginHud.prototype.getUseButton = function() {
+	return this.useButton;
 };

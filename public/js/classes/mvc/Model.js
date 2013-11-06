@@ -61,3 +61,30 @@ Model.prototype.setLocalPlayer = function(player){
 Model.prototype.setSpawn = function(spawn){
 	this.spawn = spawn;
 };
+
+/**
+ * Return the array of characters
+ * @returns {Array}
+ */
+Model.prototype.getCharacters = function(account, password){
+	var characters;
+	$.ajax({
+		type: "POST",
+		async: false,
+		data: { login: $.trim(account), password: $.trim(password)},
+		url: "http://" + settings.host+ ":" + settings.port + "/connexion",
+		dataType: "json",
+		success: function(data){
+			if(!data.valid){
+				$(".error").show();
+				$(".error").html("The login or the password is not valid.");
+				valid = false;
+			}
+			else {
+				// The client is authentified
+				authentified($.trim($("#login").val()));
+			}
+		}
+	});
+	return characters;
+};

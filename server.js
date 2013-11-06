@@ -274,8 +274,16 @@ function init(){
 				if (err) {
 					throw err;
 				}
+
 				// If the character don't exist already
 				if(!player[0]){
+					var char = accountModel.find(null);
+					char.where('login', req.body.login.toLowerCase());
+					char.exec(function (err, account) {
+						if (err) {
+							throw err;
+						}
+					});
 					// TODO Get the old character array and add the new character
 					var newCharacter = {
 							name:  req.body.characterName.toLowerCase(),
@@ -286,7 +294,8 @@ function init(){
 							y : 40,
 							exp : 0
 					};
-					accountModel.update({ login : req.body.login.toLowerCase()}, { characters : newCharacter }, { multi : true }, function (err) {
+				
+					accountModel.update({ login : req.body.login.toLowerCase()}, { $push: {characters : newCharacter}}, { multi : true }, function (err) {
 						  if (err) { throw err; }
 						  console.log(req.body.login.toLowerCase() + ' added a new  character : ' + req.body.characterName.toLowerCase());
 						  res.send({done: true});
